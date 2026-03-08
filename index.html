@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GMGC Shooting Handicap Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+* { box-sizing: border-box; } body { margin: 0; background: #f7f5f0; font-family: Lato, sans-serif; }
+.rh { transition: background 0.15s; cursor: pointer; } .rh:hover { background: #f0ede4 !important; }
+.nb { transition: all 0.18s; border-bottom: 2px solid transparent !important; }
+.nb:hover { color: #2c4a2e !important; border-bottom: 2px solid #8b7340 !important; }
+.nb.active { color: #2c4a2e !important; border-bottom: 2px solid #2c4a2e !important; font-weight: 700 !important; }
+.gtab { transition: all 0.2s; border-bottom: 3px solid transparent; }
+.gtab:hover { background: rgba(44,74,46,0.06) !important; color: #2c4a2e !important; }
+.gtab.gactive { color: #2c4a2e !important; border-bottom: 3px solid #2c4a2e !important; font-weight: 700 !important; background: rgba(44,74,46,0.04) !important; }
+.ab { transition: all 0.18s; } .ab:hover { background: #1e3320 !important; box-shadow: 0 4px 12px rgba(44,74,46,0.25); transform: translateY(-1px); }
+.gb { transition: all 0.15s; } .gb:hover { color: #2c4a2e !important; border-color: #2c4a2e !important; }
+.if:focus { outline: none !important; border-color: #2c4a2e !important; box-shadow: 0 0 0 3px rgba(44,74,46,0.1) !important; }
+.db:hover { color: #c0392b !important; } .sb:hover { background: rgba(44,74,46,0.08) !important; }
+.ii { width: 52px; text-align: center; padding: 4px; border-radius: 4px; border: 1px solid #2c4a2e; background: #fff; color: #2c4a2e; font-weight: 700; font-size: 13px; font-family: Lato, sans-serif; outline: none; }
+.ii:focus { box-shadow: 0 0 0 2px rgba(44,74,46,0.2); }
+@keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+@keyframes toastIn { from { opacity:0; transform:translateX(20px); } to { opacity:1; transform:translateX(0); } }
+.fi { animation: fadeIn 0.3s ease both; } .ti { animation: toastIn 0.25s ease both; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useMemo, useCallback } = React;
+const SUPABASE_URL = "https://egfownzrjchxboigritv.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVnZm93bnpyamNoeGJvaWdyaXR2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5NzYzMzgsImV4cCI6MjA4ODU1MjMzOH0.Td6zTVwLnPxie0A6xZClIjf8DrUiErKU-KI9a_KV950";
+const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const C = {
+  bg:"#f7f5f0",bgCard:"#ffffff",green:"#2c4a2e",greenDark:"#1e3320",
+  gold:"#8b7340",text:"#2a2a2a",textMuted:"#6b6b6b",textLight:"#999",
+  border:"#d4cfc4",rowA:"#ffffff",rowB:"#f9f7f3",rowHover:"#f0ede4",
+  tableHead:"#2c4a2e",red:"#8b2020",scoreGreen:"#2d6a4f",
+};
+const MASTER_MEMBERS = [
+  {lastName:"Baker",firstName:"Sam"},{lastName:"Baker",firstName:"Charlie"},
+  {lastName:"Boss",firstName:"Peter"},{lastName:"Brooks",firstName:"Clint"},
+  {lastName:"Brooks",firstName:"Max"},{lastName:"Cadwalader",firstName:"Kent"},
+  {lastName:"Campbell",firstName:"Trey"},{lastName:"Christine",firstName:"Kevin (28 gauge)"},
+  {lastName:"Christine",firstName:"Kevin (12 & 20 gauge)"},{lastName:"Christine",firstName:"Hoop"},
+  {lastName:"Christine",firstName:"Elle"},{lastName:"Conrad",firstName:"Andy"},
+  {lastName:"Crockett",firstName:"Max"},{lastName:"Cuddeback",firstName:"Jack"},
+  {lastName:"Cuddleback",firstName:"John"},{lastName:"Curran",firstName:"Bill"},
+  {lastName:"Curry",firstName:"David"},{lastName:"Cutler",firstName:"Peter"},
+  {lastName:"Cutler",firstName:"Ned"},{lastName:"DeForest-Keys",firstName:"David"},
+  {lastName:"Doherty",firstName:"Tom"},{lastName:"Evans",firstName:"Scott"},
+  {lastName:"Fleitas",firstName:"Bo"},{lastName:"Flinn",firstName:"Rex"},
+  {lastName:"Flinn",firstName:"Mason"},{lastName:"Flinn",firstName:"Mason (28 gauge)"},
+  {lastName:"Flinn",firstName:"Mason (12 gauge)"},{lastName:"Flinn",firstName:"Wells"},
+  {lastName:"Frazier",firstName:"Graeme"},{lastName:"Goldenberg",firstName:"Marc"},
+  {lastName:"Good",firstName:"Ellie"},{lastName:"Gowan",firstName:"Henry"},
+  {lastName:"Gowan",firstName:"Fig"},{lastName:"Gowen",firstName:"Jamie"},
+  {lastName:"Griffith",firstName:"Dick"},{lastName:"Griffith",firstName:"Peter"},
+  {lastName:"Griffith",firstName:"Rich"},{lastName:"Griffith",firstName:"Rick"},
+  {lastName:"Hamilton",firstName:"Nat"},{lastName:"Hamilton",firstName:"Sam"},
+  {lastName:"Harrington",firstName:"Bill"},{lastName:"Hipp",firstName:"Tom"},
+  {lastName:"Hipp",firstName:"Tom (2)"},{lastName:"Hole",firstName:"Jamie"},
+  {lastName:"Hole",firstName:"Sam"},{lastName:"Hunt",firstName:"Hayes"},
+  {lastName:"Ingersall",firstName:"Warren"},{lastName:"Kathol",firstName:"Rob"},
+  {lastName:"Laphier",firstName:"Ned"},{lastName:"Laveran",firstName:"George"},
+  {lastName:"Laveran",firstName:"Hatte"},{lastName:"Laveran",firstName:"Peter"},
+  {lastName:"Laveran",firstName:"Pierce"},{lastName:"Laveran",firstName:"Rudy"},
+  {lastName:"Lisle",firstName:"John"},{lastName:"Lisle",firstName:"Peter"},
+  {lastName:"MacCall",firstName:"Grant"},{lastName:"MacCall",firstName:"James"},
+  {lastName:"MacCall",firstName:"Tim"},{lastName:"Maner",firstName:"Skip"},
+  {lastName:"McNamara",firstName:"Bill"},{lastName:"McSparran",firstName:"John"},
+  {lastName:"Murdoch",firstName:"Britt"},{lastName:"Myers",firstName:"Brett"},
+  {lastName:"Neel",firstName:"Carlton"},{lastName:"Orr",firstName:"John"},
+  {lastName:"Purcell",firstName:"Andrew"},{lastName:"Rantanen",firstName:"Grady"},
+  {lastName:"Rantanen",firstName:"Jamie"},{lastName:"Ryan",firstName:"Kyle"},
+  {lastName:"Sloan",firstName:"Jeff"},{lastName:"Sloan",firstName:"Will"},
+  {lastName:"White",firstName:"Todd"},{lastName:"Wischer",firstName:"Kyle"},
+  {lastName:"Yaeger",firstName:"Jeff"},{lastName:"Yaeger",firstName:"Paige"},
+  {lastName:"Yager",firstName:"Paige"},{lastName:"Yager",firstName:"Spencer"},
+];
+const TRAP_SCORES = {
+  "Boss-Peter":[10,12,19,14,13,11,7,17,16,15],"Brooks-Clint":[17,20],
+  "Cadwalader-Kent":[19],"Cuddeback-Jack":[20,22,16,8,11,19,18,14,11],
+  "Cuddleback-John":[15,15,21,21,21,20,17,11,18,16],"Cutler-Peter":[14,14,14,20,24,17,17,19,18,16],
+  "Cutler-Ned":[13,18,15,11,13,15,19],"Doherty-Tom":[19,14,17,16,16,14,12,11,16,16],
+  "Fleitas-Bo":[12,13,14,17,19,19,20,15,13,11],"Flinn-Rex":[19,18,23,21,23,23,19,20,22,22],
+  "Flinn-Mason":[23,22,22,21,20,19,21,18,23,24],"Flinn-Wells":[23,21,21,21,22,21,21,17,18],
+  "Frazier-Graeme":[14,14,12],"Goldenberg-Marc":[18,19],"Gowen-Jamie":[9,10,15,20],
+  "Griffith-Dick":[9,15],"Griffith-Rick":[16],"Hamilton-Sam":[19],
+  "Harrington-Bill":[16,18,17,17,18,16,10,21,16,17],"Hipp-Tom":[20,21,18,20,16,19,18,21,19],
+  "Ingersall-Warren":[14,12],"Laveran-Peter":[16,18,18,18,16,14,22,21,19,21],
+  "Laveran-Pierce":[21,16,16,19,21],"Laveran-Rudy":[14,20,14,18,20,18,16,20,23,23],
+  "Laveran-Hatte":[17,19],"Laveran-George":[19],"Lisle-John":[21,18,22,17,21,13,14,15,16,20],
+  "Lisle-Peter":[13],"MacCall-Grant":[18,11],"MacCall-James":[9,16],"Maner-Skip":[14],
+  "McNamara-Bill":[16,18,16,15,16,20],"Murdoch-Britt":[17,23],"Neel-Carlton":[20,21,21,22],
+  "Orr-John":[18],"Purcell-Andrew":[12],"Rantanen-Grady":[16,16],"Ryan-Kyle":[17,15],
+  "Sloan-Jeff":[12,17,15,16],"Wischer-Kyle":[8],"Yaeger-Jeff":[11,15,18],
+  "Yager-Paige":[15,9,2,9,15,20],"Yager-Spencer":[20,16,22],
+};
+const ALTIMUS_SCORES = {
+  "Baker-Sam":[20,18,19,18,17,18,14,22],"Baker-Charlie":[12,12,14,14,17],
+  "Boss-Peter":[20,19,19,20,20,23,18,20,18,19],"Brooks-Clint":[13,10,19,18,20,16,15,18,15,22],
+  "Brooks-Max":[19,19],"Cadwalader-Kent":[18],"Campbell-Trey":[1,2],
+  "Christine-Kevin (28 gauge)":[18,23,22,17,19,21,20,17,18,18],
+  "Christine-Kevin (12 & 20 gauge)":[20,21,17,22,22,20,20,22,21,20],
+  "Christine-Hoop":[24,17,21,21,20],"Christine-Elle":[8,5],"Conrad-Andy":[17,15],
+  "Crockett-Max":[9,10],"Cuddleback-John":[24,20,20,19,22,18,20,23,23,23],
+  "Curran-Bill":[10,7,10,7],"Curry-David":[14,20],"Cutler-Peter":[19,23,17,20,21,20,22,21,20,19],
+  "DeForest-Keys-David":[14,15],"Doherty-Tom":[17,12,14],"Evans-Scott":[17,17,18,13],
+  "Fleitas-Bo":[15,13,16,21,19,17,18,19,18,18],"Flinn-Mason (28 gauge)":[22,21,22,20,18,22,15,21,21,22],
+  "Flinn-Rex":[20,18,20,19,21,21,21,24,22,24],"Flinn-Mason (12 gauge)":[23,23,25,24,23,24,25,23,23,24],
+  "Frazier-Graeme":[16,8],"Goldenberg-Marc":[14],"Good-Ellie":[3,3],
+  "Gowan-Henry":[22,16,18,20],"Gowan-Fig":[21,20,17,17,16,21,19,20],
+  "Gowen-Jamie":[23,20,19,18,20,20,17,22,15,16],"Griffith-Dick":[14,9,11,19,11,16,13,13,11,15],
+  "Griffith-Peter":[16,11,10,9],"Griffith-Rich":[14],"Hamilton-Nat":[21,16],
+  "Hamilton-Sam":[20],"Harrington-Bill":[20,18,19,18,20,20,17,21,24,24],
+  "Hipp-Tom":[23,24,24,25,23,20,21],"Hole-Jamie":[10,14,10,18,14,12,11,14],
+  "Hole-Sam":[22,20,22,20,20,19,21,18],"Hunt-Hayes":[6,5,5,7],
+  "Ingersall-Warren":[16,20,16,20,16,20,13,19,20,21],"Kathol-Rob":[6],
+  "Laphier-Ned":[9,12,16],"Laveran-Peter":[18,19,18,20],
+  "Laveran-Pierce":[18,17,18,18,22,20,21],"Laveran-Rudy":[24,22,22,23,22,23,24,25,24,21],
+  "Laveran-Hatte":[11],"Lisle-John":[23,21,21,22,23,20,21,21,21,20],
+  "MacCall-Grant":[18,18],"MacCall-James":[12,15],"Maner-Skip":[9,7,5,3],
+  "McNamara-Bill":[11,13,14,19,16,13,15,17],"McSparran-John":[14,9,8,13,12,11],
+  "Murdoch-Britt":[19,21,22,24,24,22,23,22],"Myers-Brett":[2,8,9],
+  "Neel-Carlton":[22,25,24,25,25,25,24,23,25,25],"Orr-John":[11,19,14],
+  "Purcell-Andrew":[14,21,17,16,18,18,18,18,18,21],"Rantanen-Jamie":[18,16,18,13],
+  "Ryan-Kyle":[17,19,14],"Sloan-Jeff":[21,21,18,18,21,21,21,20,19,19],
+  "Sloan-Will":[11,14],"Hipp-Tom (2)":[20,20],"Wischer-Kyle":[12,13],
+  "Yaeger-Jeff":[10,15,10,15,11,12,18],"Yaeger-Paige":[14,12,14,14,12,16],
+  "White-Todd":[20,18,18],
+};
+const DOUBLETRAP_SCORES = {
+  "Boss-Peter":[30,28,28],"Brooks-Clint":[28,20,28],"Cadwalader-Kent":[22,25],
+  "Cuddeback-Jack":[15,17],"Cuddleback-John":[24,20],"Doherty-Tom":[31],
+  "Flinn-Mason":[31,34,30,36,43],"Goldenberg-Marc":[30],"Harrington-Bill":[37,33],
+  "Laveran-George":[14],"Laveran-Hatte":[28,21],"Laveran-Peter":[21,23,28],
+  "Laveran-Pierce":[30],"Laveran-Rudy":[25,26,33],"Lisle-John":[26,25],
+  "Lisle-Peter":[17],"Maner-Skip":[16],"Neel-Carlton":[40],
+};
+const GAMES = {
+  trap:{label:"Trap Shooting",maxScore:25,showAvg50:true},
+  altimus:{label:"Altimus",maxScore:25,showAvg50:true},
+  doubletrap:{label:"Double Trap",maxScore:50,showAvg50:false},
+};
+const SCORE_MAPS = {trap:TRAP_SCORES,altimus:ALTIMUS_SCORES,doubletrap:DOUBLETRAP_SCORES};
+function memberId(m){return m.lastName+"-"+m.firstName;}
+function buildInitialData(){
+  var shooters=MASTER_MEMBERS.map(function(m){return{id:memberId(m),lastName:m.lastName,firstName:m.firstName};});
+  var data={shooters:shooters};
+  Object.keys(GAMES).forEach(function(g){
+    var rounds=[];
+    shooters.forEach(function(s){
+      var scores=(SCORE_MAPS[g]||{})[s.id]||[];
+      scores.forEach(function(score,i){rounds.push({id:s.id+"-"+g+i,shooterId:s.id,score:score,date:"Prior season"});});
+    });
+    data[g]={rounds:rounds};
+  });
+  return data;
+}
+var TH={padding:"11px 10px",fontWeight:600,fontSize:12,letterSpacing:0.5,textAlign:"center",borderBottom:"1px solid rgba(255,255,255,0.1)"};
+var TD={padding:"10px 10px",fontSize:13,borderBottom:"1px solid #ece9e0"};
+var LST={display:"block",marginBottom:7,color:C.textMuted,fontSize:11,letterSpacing:1.5,textTransform:"uppercase"};
+var IST={width:"100%",padding:"11px 13px",borderRadius:4,border:"1px solid "+C.border,background:C.bg,color:C.text,fontSize:15,fontFamily:"Lato, sans-serif"};
+function scoreColor(sc,max){var p=sc/max;return p>=0.88?C.scoreGreen:p>=0.60?"#000000":C.red;}
+function handicapColor(h){return parseFloat(h)<=3?C.scoreGreen:parseFloat(h)<=7?C.gold:C.red;}
+function fullName(s){if(!s)return "";return(s.lastName||"")+", "+(s.firstName||"");}
+function calcStats(rs,maxScore){
+  if(!rs.length)return{avg:null,handicap:null,count:0,avg80:null,avg50:null,avg50_80:null};
+  var avg=rs.reduce(function(s,x){return s+x.score;},0)/rs.length;
+  return{avg:avg.toFixed(1),handicap:Math.abs(maxScore-avg).toFixed(1),count:rs.length,
+    avg80:(avg*0.8).toFixed(1),avg50:(avg*2).toFixed(1),avg50_80:(avg*2*0.8).toFixed(1)};
+}
+function InlineInput({shooterId,onCommit,rowBg,maxScore}){
+  const [val,setVal]=useState("");
+  const handleCommit=useCallback(function(){
+    var score=parseInt(val);
+    if(!isNaN(score)&&score>=0&&score<=maxScore){onCommit(shooterId,score);setVal("");}
+    else setVal("");
+  },[val,shooterId,onCommit,maxScore]);
+  return(
+    <td style={Object.assign({},TD,{textAlign:"center",background:rowBg,borderLeft:"2px solid #a8cba8",padding:"6px 8px"})}
+      onClick={function(e){e.stopPropagation();}}>
+      <input className="ii" type="number" min={0} max={maxScore} placeholder="—" value={val}
+        onChange={function(e){setVal(e.target.value);}}
+        onKeyDown={function(e){if(e.key==="Enter")handleCommit();}}
+        onBlur={handleCommit}/>
+    </td>
+  );
+}
+function SectionHeader({title,small}){
+  return(
+    <div style={{display:"flex",alignItems:"center",gap:14,marginBottom:small?0:20}}>
+      <h2 style={{margin:0,fontSize:small?15:20,color:C.green,fontFamily:"Playfair Display, serif",fontWeight:700}}>{title}</h2>
+      <div style={{flex:1,height:1,background:C.border}}/>
+    </div>
+  );
+}
+function Stat({label,value,highlight}){
+  return(
+    <div>
+      <div style={{color:C.textMuted,fontSize:10,marginBottom:5,letterSpacing:2,textTransform:"uppercase"}}>{label}</div>
+      <div style={{fontSize:32,fontWeight:700,color:highlight?C.green:C.text,fontFamily:"Playfair Display, serif"}}>{value}</div>
+    </div>
+  );
+}
+function App(){
+  const [gameData,setGameData]=useState(null);
+  const [activeGame,setActiveGame]=useState("trap");
+  const [view,setView]=useState("leaderboard");
+  const [selectedShooter,setSelectedShooter]=useState(null);
+  const [lastNameInput,setLastNameInput]=useState("");
+  const [firstNameInput,setFirstNameInput]=useState("");
+  const [roundShooterId,setRoundShooterId]=useState("");
+  const [roundScore,setRoundScore]=useState("");
+  const [toast,setToast]=useState(null);
+  const [loaded,setLoaded]=useState(false);
+  const [viewKey,setViewKey]=useState(0);
+  const [sortMode,setSortMode]=useState("handicap");
+
+  useEffect(function(){
+    async function load(){
+      try{
+        var {data,error}=await db.from("scores").select("data").eq("id","gmgc-v1").single();
+        if(!error&&data&&data.data&&data.data.shooters&&data.data.shooters.length){
+          setGameData(data.data);setLoaded(true);return;
+        }
+      }catch(e){}
+      var init=buildInitialData();
+      setGameData(init);
+      setLoaded(true);
+    }
+    load();
+  },[]);
+
+  useEffect(function(){
+    if(!loaded||!gameData)return;
+    db.from("scores").update({data:gameData,updated_at:new Date().toISOString()}).eq("id","gmgc-v1").then(function(){});
+  },[gameData,loaded]);
+
+  var game=GAMES[activeGame];
+  var shooters=gameData?gameData.shooters:[];
+  var rounds=gameData?gameData[activeGame].rounds:[];
+
+  function switchView(v){setView(v);setViewKey(function(k){return k+1;});}
+  function switchGame(g){setActiveGame(g);setView("leaderboard");setViewKey(function(k){return k+1;});setSelectedShooter(null);}
+  function showToast(msg){setToast(msg);setTimeout(function(){setToast(null);},2800);}
+
+  var roundsByShooter=useMemo(function(){
+    var map={};
+    rounds.forEach(function(r){if(!map[r.shooterId])map[r.shooterId]=[];map[r.shooterId].push(r);});
+    return map;
+  },[rounds]);
+
+  var withStats=useMemo(function(){
+    return shooters.map(function(s){
+      var sr=roundsByShooter[s.id]||[];
+      return Object.assign({},s,calcStats(sr,game.maxScore),{allRounds:sr,last10:sr.slice(-10)});
+    });
+  },[shooters,roundsByShooter,game.maxScore]);
+
+  var leaderboard=useMemo(function(){
+    return withStats.slice().sort(function(a,b){
+      if(sortMode==="alpha")return(a.lastName||"").localeCompare(b.lastName||"");
+      if(a.handicap===null&&b.handicap===null)return(a.lastName||"").localeCompare(b.lastName||"");
+      if(a.handicap===null)return 1;if(b.handicap===null)return -1;
+      return parseFloat(a.handicap)-parseFloat(b.handicap);
+    });
+  },[withStats,sortMode]);
+
+  function updateData(updater){setGameData(function(prev){return updater(prev);});}
+
+  var addShooter=useCallback(function(){
+    var ln=lastNameInput.trim(),fn=firstNameInput.trim();
+    if(!ln||!fn){showToast("Please enter both a first and last name.");return;}
+    var id=ln+"-"+fn;
+    if(shooters.find(function(s){return s.id===id;})){showToast("Member already exists.");return;}
+    updateData(function(prev){return Object.assign({},prev,{shooters:prev.shooters.concat([{id,lastName:ln,firstName:fn}])});});
+    setLastNameInput("");setFirstNameInput("");
+    showToast(ln+", "+fn+" added to all games.");
+    switchView("leaderboard");
+  },[lastNameInput,firstNameInput,shooters]);
+
+  var logRound=useCallback(function(){
+    var score=parseInt(roundScore);
+    if(!roundShooterId||isNaN(score)||score<0||score>game.maxScore){showToast("Please select a member and enter a valid score (0-"+game.maxScore+").");return;}
+    var date=new Date().toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});
+    var nr={id:Date.now().toString(),shooterId:roundShooterId,score,date};
+    updateData(function(prev){var gd=prev[activeGame];return Object.assign({},prev,{[activeGame]:{rounds:gd.rounds.concat([nr])}});});
+    setRoundScore("");
+    var shooter=shooters.find(function(s){return s.id===roundShooterId;});
+    showToast("Score of "+score+" logged for "+fullName(shooter)+".");
+    switchView("leaderboard");
+  },[roundShooterId,roundScore,shooters,activeGame,game.maxScore]);
+
+  var logInlineRound=useCallback(function(shooterId,score){
+    var date=new Date().toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});
+    var nr={id:Date.now().toString(),shooterId,score,date};
+    updateData(function(prev){var gd=prev[activeGame];return Object.assign({},prev,{[activeGame]:{rounds:gd.rounds.concat([nr])}});});
+    var shooter=shooters.find(function(s){return s.id===shooterId;});
+    showToast("Score of "+score+" logged for "+fullName(shooter)+".");
+  },[shooters,activeGame]);
+
+  function deleteShooter(id){
+    updateData(function(prev){
+      var next=Object.assign({},prev,{shooters:prev.shooters.filter(function(s){return s.id!==id;})});
+      Object.keys(GAMES).forEach(function(g){next[g]={rounds:prev[g].rounds.filter(function(r){return r.shooterId!==id;});};});
+      return next;
+    });
+    switchView("leaderboard");
+  }
+  function deleteRound(id){
+    updateData(function(prev){var gd=prev[activeGame];return Object.assign({},prev,{[activeGame]:{rounds:gd.rounds.filter(function(r){return r.id!==id;})}});});
+  }
+
+  var profileShooter=shooters.find(function(s){return s.id===selectedShooter;});
+  var profileRounds=(roundsByShooter[selectedShooter]||[]).slice().reverse();
+  var profileStats=selectedShooter?calcStats(roundsByShooter[selectedShooter]||[],game.maxScore):null;
+  var today=new Date().toLocaleDateString("en-US",{weekday:"long",year:"numeric",month:"long",day:"numeric"});
+
+  if(!gameData)return <div style={{padding:40,color:C.green,fontFamily:"Playfair Display, serif",fontSize:18}}>Loading…</div>;
+
+  return(
+    <div style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:"Lato, sans-serif"}}>
+      <div style={{background:C.green,padding:"7px 24px",textAlign:"center"}}>
+        <span style={{color:"rgba(255,255,255,0.7)",fontSize:11,letterSpacing:2,textTransform:"uppercase",fontWeight:300}}>
+          King of Prussia, Pennsylvania &nbsp;·&nbsp; Est. 1916
+        </span>
+      </div>
+      <div style={{background:C.bgCard,borderBottom:"1px solid "+C.border,padding:"20px 24px 0"}}>
+        <div style={{maxWidth:1100,margin:"0 auto"}}>
+          <div style={{display:"flex",alignItems:"center",gap:20,marginBottom:16}}>
+            <div>
+              <div style={{fontFamily:"Playfair Display, serif",fontSize:22,fontWeight:700,color:C.green}}>Gulph Mills Golf Club</div>
+              <div style={{fontFamily:"Playfair Display, serif",fontSize:14,fontStyle:"italic",color:C.gold,marginTop:2}}>Shooting Handicap Tracker</div>
+            </div>
+            <div style={{marginLeft:"auto",textAlign:"right"}}>
+              <div style={{fontSize:11,color:C.textMuted,fontStyle:"italic",fontFamily:"Playfair Display, serif"}}>{today}</div>
+            </div>
+          </div>
+          <div style={{display:"flex",gap:0,borderBottom:"2px solid "+C.border}}>
+            {Object.keys(GAMES).map(function(g){
+              return(<button key={g} className={"gtab"+(activeGame===g?" gactive":"")} onClick={function(){switchGame(g);}}
+                style={{padding:"10px 24px",background:"none",border:"none",borderBottom:"3px solid transparent",color:activeGame===g?C.green:C.textMuted,cursor:"pointer",fontSize:14,fontFamily:"Playfair Display, serif",fontWeight:activeGame===g?700:400,letterSpacing:0.3}}>
+                {GAMES[g].label}</button>);
+            })}
+          </div>
+          <div style={{display:"flex",gap:0,borderTop:"1px solid "+C.border}}>
+            {[["Leaderboard","leaderboard"],["Add Member","add-shooter"],["Log Round","log-round"]].map(function(item){
+              return(<button key={item[1]} className={"nb"+(view===item[1]?" active":"")} onClick={function(){switchView(item[1]);}}
+                style={{padding:"10px 20px",background:"none",border:"none",borderBottom:"2px solid transparent",color:view===item[1]?C.green:C.textMuted,cursor:"pointer",fontSize:13,fontFamily:"Lato, sans-serif",fontWeight:view===item[1]?700:400}}>
+                {item[0]}</button>);
+            })}
+          </div>
+        </div>
+      </div>
+      <div style={{height:3,background:C.green}}/>
+      {toast&&(<div className="ti" style={{position:"fixed",top:20,right:20,background:C.green,color:"#fff",padding:"11px 20px",borderRadius:4,fontSize:13,fontWeight:600,zIndex:999,boxShadow:"0 4px 16px rgba(0,0,0,0.2)",maxWidth:300}}>{toast}</div>)}
+      <div style={{maxWidth:1100,margin:"0 auto",padding:"32px 16px"}}>
+        <div style={{display:"flex",alignItems:"center",gap:14,marginBottom:20}}>
+          <div style={{fontSize:11,color:C.textMuted,letterSpacing:2,textTransform:"uppercase"}}>{game.label} &nbsp;·&nbsp; Max Score: {game.maxScore}</div>
+          <div style={{flex:1,height:1,background:C.border}}/>
+        </div>
+
+        {view==="leaderboard"&&(
+          <div className="fi" key={activeGame+"-"+viewKey}>
+            <div style={{display:"flex",alignItems:"center",gap:14,marginBottom:16}}>
+              <h2 style={{margin:0,fontSize:20,color:C.green,fontFamily:"Playfair Display, serif",fontWeight:700}}>Leaderboard</h2>
+              <div style={{flex:1,height:1,background:C.border}}/>
+              <button className="sb" onClick={function(){setSortMode(function(m){return m==="handicap"?"alpha":"handicap";});}}
+                style={{padding:"6px 14px",borderRadius:4,border:"1px solid "+C.border,background:C.bgCard,color:C.green,fontSize:12,cursor:"pointer",fontFamily:"Lato, sans-serif",fontWeight:700}}>
+                {sortMode==="handicap"?"Sort: Handicap":"Sort: A-Z"}
+              </button>
+            </div>
+            <div style={{overflowX:"auto",borderRadius:6,border:"1px solid "+C.border,boxShadow:"0 2px 12px rgba(0,0,0,0.07)"}}>
+              <table style={{width:"100%",borderCollapse:"collapse",minWidth:1100,fontSize:13}}>
+                <thead>
+                  <tr style={{background:C.tableHead}}>
+                    <th style={Object.assign({},TH,{color:"#fff",width:36})}>#</th>
+                    <th style={Object.assign({},TH,{color:"#fff",textAlign:"left",minWidth:160,fontFamily:"Playfair Display, serif"})}>Member</th>
+                    <th style={Object.assign({},TH,{color:"rgba(255,255,255,0.8)",background:"rgba(0,0,0,0.15)",borderLeft:"1px solid rgba(255,255,255,0.1)",minWidth:56})}>Rounds</th>
+                    <th style={Object.assign({},TH,{color:"rgba(255,255,255,0.8)",background:"rgba(0,0,0,0.15)",minWidth:70})}>Avg Score</th>
+                    <th style={Object.assign({},TH,{color:"rgba(255,255,255,0.8)",background:"rgba(0,0,0,0.15)",borderRight:"1px solid rgba(255,255,255,0.1)",minWidth:70})}>Handicap</th>
+                    {[10,9,8,7,6,5,4,3,2,1].map(function(n){return<th key={n} style={Object.assign({},TH,{color:"rgba(255,255,255,0.5)",background:"rgba(0,0,0,0.25)",minWidth:38,fontSize:11,fontWeight:400})}>{"R"+n}</th>;})}
+                    <th style={Object.assign({},TH,{color:"rgba(255,255,255,0.9)",background:"rgba(44,74,46,0.6)",borderLeft:"1px solid rgba(255,255,255,0.2)",minWidth:90,fontSize:11})}>Latest Round</th>
+                    <th style={Object.assign({},TH,{color:"rgba(255,255,255,0.8)",background:"rgba(0,0,0,0.15)",borderLeft:"1px solid rgba(255,255,255,0.1)",minWidth:75})}>Avg Score</th>
+                    <th style={Object.assign({},TH,{color:"rgba(255,255,255,0.8)",background:"rgba(0,0,0,0.15)",minWidth:70})}>80% Avg</th>
+                    {game.showAvg50&&<th style={Object.assign({},TH,{color:"rgba(255,255,255,0.8)",background:"rgba(0,0,0,0.15)",minWidth:70})}>Avg / 50</th>}
+                    {game.showAvg50&&<th style={Object.assign({},TH,{color:"rgba(255,255,255,0.8)",background:"rgba(0,0,0,0.15)",minWidth:85})}>80% Avg / 50</th>}
+                    <th style={Object.assign({},TH,{width:50})}></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {leaderboard.map(function(s,i){
+                    var hist=s.last10,filled=[];
+                    for(var j=0;j<10;j++)filled.push(hist[hist.length-10+j]||null);
+                    var bg=i%2===0?C.rowA:C.rowB,statBg=i%2===0?"#f4f1ea":"#eeebe1",scoreBg=i%2===0?"#faf8f4":"#f5f2ec",inlineBg=i%2===0?"#edf5ee":"#e6f0e7";
+                    return(
+                      <tr key={s.id} className="rh" style={{background:bg}} onClick={function(sid){return function(){setSelectedShooter(sid);switchView("profile");};}(s.id)}>
+                        <td style={Object.assign({},TD,{textAlign:"center",color:C.textLight,fontStyle:"italic"})}>{i+1}</td>
+                        <td style={Object.assign({},TD,{fontWeight:700,fontFamily:"Playfair Display, serif",color:C.green,fontSize:14})}>{fullName(s)}</td>
+                        <td style={Object.assign({},TD,{textAlign:"center",background:statBg,borderLeft:"1px solid "+C.border})}>{s.count}</td>
+                        <td style={Object.assign({},TD,{textAlign:"center",background:statBg})}>{s.avg||<span style={{color:C.textLight}}>—</span>}</td>
+                        <td style={Object.assign({},TD,{textAlign:"center",background:statBg,borderRight:"1px solid "+C.border})}>
+                          {s.handicap!==null?<span style={{color:handicapColor(s.handicap),fontWeight:700,fontSize:14,fontFamily:"Playfair Display, serif"}}>{s.handicap}</span>:<span style={{color:C.textLight}}>—</span>}
+                        </td>
+                        {filled.map(function(r,j){return(
+                          <td key={j} style={Object.assign({},TD,{textAlign:"center",background:scoreBg,color:r?scoreColor(r.score,game.maxScore):"#ccc",fontWeight:r?700:400,fontSize:r?13:16})}>
+                            {r?r.score:"·"}
+                          </td>);})}
+                        <InlineInput key={s.id+"-"+activeGame} shooterId={s.id} onCommit={logInlineRound} rowBg={inlineBg} maxScore={game.maxScore}/>
+                        <td style={Object.assign({},TD,{textAlign:"center",background:statBg,borderLeft:"1px solid "+C.border})}>{s.avg||<span style={{color:C.textLight}}>—</span>}</td>
+                        <td style={Object.assign({},TD,{textAlign:"center",background:statBg})}>{s.avg80||<span style={{color:C.textLight}}>—</span>}</td>
+                        {game.showAvg50&&<td style={Object.assign({},TD,{textAlign:"center",background:statBg})}>{s.avg50||<span style={{color:C.textLight}}>—</span>}</td>}
+                        {game.showAvg50&&<td style={Object.assign({},TD,{textAlign:"center",background:statBg})}>{s.avg50_80||<span style={{color:C.textLight}}>—</span>}</td>}
+                        <td style={Object.assign({},TD,{textAlign:"center"})} onClick={function(e){e.stopPropagation();}}>
+                          <button className="gb" onClick={function(sid){return function(){setSelectedShooter(sid);switchView("profile");};}(s.id)}
+                            style={{background:"none",border:"1px solid "+C.border,color:C.textMuted,borderRadius:3,padding:"3px 8px",cursor:"pointer",fontSize:11}}>View</button>
+                        </td>
+                      </tr>);
+                  })}
+                </tbody>
+              </table>
+            </div>
+            <div style={{marginTop:10,fontSize:11,color:C.textLight,textAlign:"right",fontStyle:"italic"}}>
+              R10 = oldest · R1 = most recent &nbsp;·&nbsp;
+              <span style={{color:C.scoreGreen}}>■</span> {activeGame==="doubletrap"?"44+":"22+"} &nbsp;
+              <span style={{color:"#000000"}}>■</span> {activeGame==="doubletrap"?"30-43":"15-21"} &nbsp;
+              <span style={{color:C.red}}>■</span> {activeGame==="doubletrap"?"<30":"<15"} &nbsp;·&nbsp;
+              <span style={{color:C.green,fontStyle:"normal"}}>Green cell</span> = enter new score &amp; press Enter
+            </div>
+          </div>
+        )}
+
+        {view==="add-shooter"&&(
+          <div className="fi" key={activeGame+"-"+viewKey} style={{maxWidth:440}}>
+            <SectionHeader title="Add Member"/>
+            <div style={{background:C.bgCard,border:"1px solid "+C.border,borderRadius:6,padding:"28px",boxShadow:"0 2px 12px rgba(0,0,0,0.06)"}}>
+              <p style={{margin:"0 0 22px",color:C.textMuted,fontStyle:"italic",fontFamily:"Playfair Display, serif",fontSize:14}}>New members are added to all three games automatically.</p>
+              <label style={LST}>Last Name</label>
+              <input className="if" value={lastNameInput} onChange={function(e){setLastNameInput(e.target.value);}} onKeyDown={function(e){if(e.key==="Enter")addShooter();}} placeholder="e.g. Flinn" style={IST}/>
+              <label style={Object.assign({},LST,{marginTop:14})}>First Name</label>
+              <input className="if" value={firstNameInput} onChange={function(e){setFirstNameInput(e.target.value);}} onKeyDown={function(e){if(e.key==="Enter")addShooter();}} placeholder="e.g. Rex" style={IST}/>
+              <button className="ab" onClick={addShooter} style={{marginTop:18,width:"100%",padding:"12px",borderRadius:4,border:"none",background:C.green,color:"#fff",fontWeight:700,fontSize:14,cursor:"pointer",letterSpacing:1,fontFamily:"Lato, sans-serif",textTransform:"uppercase"}}>Add Member</button>
+            </div>
+          </div>
+        )}
+
+        {view==="log-round"&&(
+          <div className="fi" key={activeGame+"-"+viewKey} style={{maxWidth:440}}>
+            <SectionHeader title={"Log a Round — "+game.label}/>
+            <div style={{background:C.bgCard,border:"1px solid "+C.border,borderRadius:6,padding:"28px",boxShadow:"0 2px 12px rgba(0,0,0,0.06)"}}>
+              <p style={{margin:"0 0 22px",color:C.textMuted,fontStyle:"italic",fontFamily:"Playfair Display, serif",fontSize:14}}>Enter a score out of {game.maxScore} for {game.label}.</p>
+              <label style={LST}>Member</label>
+              <select className="if" value={roundShooterId} onChange={function(e){setRoundShooterId(e.target.value);}} style={Object.assign({},IST,{background:C.bg})}>
+                <option value="">— Select a member —</option>
+                {withStats.slice().sort(function(a,b){return(a.lastName||"").localeCompare(b.lastName||"");}).map(function(s){return<option key={s.id} value={s.id}>{fullName(s)}</option>;})}
+              </select>
+              <label style={Object.assign({},LST,{marginTop:14})}>Score (out of {game.maxScore})</label>
+              <input className="if" type="number" min={0} max={game.maxScore} value={roundScore} onChange={function(e){setRoundScore(e.target.value);}} placeholder={"e.g. "+Math.round(game.maxScore*0.85)} style={IST}/>
+              <button className="ab" onClick={logRound} style={{marginTop:18,width:"100%",padding:"12px",borderRadius:4,border:"none",background:C.green,color:"#fff",fontWeight:700,fontSize:14,cursor:"pointer",letterSpacing:1,fontFamily:"Lato, sans-serif",textTransform:"uppercase"}}>Log Round</button>
+            </div>
+          </div>
+        )}
+
+        {view==="profile"&&profileShooter&&(
+          <div className="fi" key={activeGame+"-"+viewKey}>
+            <button className="gb" onClick={function(){switchView("leaderboard");}} style={{background:"none",border:"none",color:C.green,cursor:"pointer",fontSize:13,marginBottom:20,padding:0,fontFamily:"Lato, sans-serif"}}>&larr; Back to Leaderboard</button>
+            <div style={{background:C.bgCard,border:"1px solid "+C.border,borderLeft:"4px solid "+C.green,borderRadius:6,padding:"24px 28px",marginBottom:28,boxShadow:"0 2px 12px rgba(0,0,0,0.06)"}}>
+              <div style={{fontSize:10,color:C.textMuted,letterSpacing:2.5,textTransform:"uppercase",marginBottom:4}}>Member Profile &nbsp;·&nbsp; {game.label}</div>
+              <h2 style={{margin:"0 0 22px",fontSize:26,color:C.green,fontFamily:"Playfair Display, serif",fontWeight:700}}>{fullName(profileShooter)}</h2>
+              <div style={{display:"flex",gap:48,flexWrap:"wrap",borderTop:"1px solid "+C.border,paddingTop:18}}>
+                <Stat label="Rounds Played" value={profileStats.count}/>
+                <Stat label="Average Score" value={profileStats.avg||"—"}/>
+                <Stat label="Handicap" value={profileStats.handicap||"—"} highlight/>
+              </div>
+            </div>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+              <SectionHeader title="Round History" small/>
+              <button className="db" onClick={function(){deleteShooter(profileShooter.id);}} style={{background:"none",border:"1px solid "+C.red,color:C.red,borderRadius:4,padding:"6px 14px",cursor:"pointer",fontSize:12,fontFamily:"Lato, sans-serif"}}>Remove Member</button>
+            </div>
+            {profileRounds.length===0?(
+              <p style={{color:C.textMuted,fontStyle:"italic"}}>No rounds logged yet for {game.label}.</p>
+            ):(
+              <div style={{borderRadius:6,border:"1px solid "+C.border,overflow:"hidden"}}>
+                <table style={{width:"100%",borderCollapse:"collapse"}}>
+                  <thead>
+                    <tr style={{background:C.tableHead}}>
+                      <th style={Object.assign({},TH,{textAlign:"left",color:"#fff",fontFamily:"Playfair Display, serif"})}>Date</th>
+                      <th style={Object.assign({},TH,{color:"#fff",fontFamily:"Playfair Display, serif"})}>Score</th>
+                      <th style={Object.assign({},TH,{color:"#fff",fontFamily:"Playfair Display, serif"})}>Round Handicap</th>
+                      <th style={Object.assign({},TH,{width:40})}></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {profileRounds.map(function(r,i){return(
+                      <tr key={r.id} className="rh" style={{background:i%2===0?C.rowA:C.rowB}}>
+                        <td style={Object.assign({},TD,{color:C.textMuted,fontStyle:"italic"})}>{r.date}</td>
+                        <td style={Object.assign({},TD,{textAlign:"center",color:scoreColor(r.score,game.maxScore),fontWeight:700,fontFamily:"Playfair Display, serif",fontSize:15})}>{r.score} / {game.maxScore}</td>
+                        <td style={Object.assign({},TD,{textAlign:"center"})}>{game.maxScore-r.score}</td>
+                        <td style={Object.assign({},TD,{textAlign:"center"})}>
+                          <button className="db" onClick={function(rid){return function(){deleteRound(rid);};}(r.id)} style={{background:"none",border:"none",color:"#bbb",cursor:"pointer",fontSize:14}}>&#x2715;</button>
+                        </td>
+                      </tr>);})}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+      <div style={{background:C.green,marginTop:60,padding:"24px",textAlign:"center"}}>
+        <div style={{color:"rgba(255,255,255,0.6)",fontSize:11,letterSpacing:2,textTransform:"uppercase",fontWeight:300}}>Gulph Mills Golf Club &nbsp;·&nbsp; Shooting Sports &nbsp;·&nbsp; King of Prussia, PA</div>
+        <div style={{color:"rgba(255,255,255,0.35)",fontSize:10,marginTop:6}}>200 Swedeland Road &nbsp;·&nbsp; (610) 828-0717</div>
+      </div>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
