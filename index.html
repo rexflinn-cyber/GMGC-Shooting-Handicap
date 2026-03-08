@@ -309,7 +309,7 @@ function App(){
   function deleteShooter(id){
     updateData(function(prev){
       var next=Object.assign({},prev,{shooters:prev.shooters.filter(function(s){return s.id!==id;})});
-      Object.keys(GAMES).forEach(function(g){next[g]={rounds:prev[g].rounds.filter(function(r){return r.shooterId!==id;});};});
+      Object.keys(GAMES).forEach(function(g){next[g]={rounds:prev[g].rounds.filter(function(r){return r.shooterId!==id;})};});
       return next;
     });
     switchView("leaderboard");
