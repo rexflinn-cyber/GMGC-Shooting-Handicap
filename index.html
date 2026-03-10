@@ -24,6 +24,9 @@
 .db:hover { color: #c0392b !important; } .sb:hover { background: rgba(44,74,46,0.08) !important; }
 .ii { width: 52px; text-align: center; padding: 4px; border-radius: 4px; border: 1px solid #2c4a2e; background: #fff; color: #2c4a2e; font-weight: 700; font-size: 13px; font-family: Lato, sans-serif; outline: none; }
 .ii:focus { box-shadow: 0 0 0 2px rgba(44,74,46,0.2); }
+.pct-input { width: 36px; text-align: center; padding: 2px 4px; border-radius: 3px; border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.12); color: #fff; font-weight: 700; font-size: 11px; font-family: Lato, sans-serif; outline: none; -moz-appearance: textfield; }
+.pct-input:focus { border-color: rgba(255,255,255,0.7); background: rgba(255,255,255,0.2); }
+.pct-input::-webkit-inner-spin-button, .pct-input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
 @keyframes toastIn { from { opacity:0; transform:translateX(20px); } to { opacity:1; transform:translateX(0); } }
 .fi { animation: fadeIn 0.3s ease both; } .ti { animation: toastIn 0.25s ease both; }
@@ -36,10 +39,11 @@ const { useState, useEffect, useMemo, useCallback } = React;
 const SUPABASE_URL = "https://egfownzrjchxboigritv.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVnZm93bnpyamNoeGJvaWdyaXR2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5NzYzMzgsImV4cCI6MjA4ODU1MjMzOH0.Td6zTVwLnPxie0A6xZClIjf8DrUiErKU-KI9a_KV950";
 const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
 const C = {
   bg:"#f7f5f0",bgCard:"#ffffff",green:"#2c4a2e",greenDark:"#1e3320",
   gold:"#8b7340",text:"#2a2a2a",textMuted:"#6b6b6b",textLight:"#999",
-  border:"#d4cfc4",rowA:"#ffffff",rowB:"#f9f7f3",rowHover:"#f0ede4",
+  border:"#d4cfc4",rowA:"#ffffff",rowB:"#f9f7f3",
   tableHead:"#2c4a2e",red:"#8b2020",scoreGreen:"#2d6a4f",
 };
 const MASTER_MEMBERS = [
@@ -170,11 +174,18 @@ var IST={width:"100%",padding:"11px 13px",borderRadius:4,border:"1px solid "+C.b
 function scoreColor(sc,max){var p=sc/max;return p>=0.88?C.scoreGreen:p>=0.60?"#000000":C.red;}
 function handicapColor(h){return parseFloat(h)<=3?C.scoreGreen:parseFloat(h)<=7?C.gold:C.red;}
 function fullName(s){if(!s)return "";return(s.lastName||"")+", "+(s.firstName||"");}
-function calcStats(rs,maxScore){
-  if(!rs.length)return{avg:null,handicap:null,count:0,avg80:null,avg50:null,avg50_80:null};
+function calcStats(rs,maxScore,pct){
+  if(!rs.length)return{avg:null,handicap:null,count:0,avgPct:null,avg50:null,avg50Pct:null};
   var avg=rs.reduce(function(s,x){return s+x.score;},0)/rs.length;
-  return{avg:avg.toFixed(1),handicap:Math.abs(maxScore-avg).toFixed(1),count:rs.length,
-    avg80:(avg*0.8).toFixed(1),avg50:(avg*2).toFixed(1),avg50_80:(avg*2*0.8).toFixed(1)};
+  var f=pct/100;
+  return{
+    avg:avg.toFixed(1),
+    handicap:Math.abs(maxScore-avg).toFixed(1),
+    count:rs.length,
+    avgPct:(avg*f).toFixed(1),
+    avg50:(avg*2).toFixed(1),
+    avg50Pct:(avg*2*f).toFixed(1),
+  };
 }
 function InlineInput({shooterId,onCommit,rowBg,maxScore}){
   const [val,setVal]=useState("");
@@ -209,6 +220,26 @@ function Stat({label,value,highlight}){
     </div>
   );
 }
+
+function PctInput({value, onChange}){
+  const [localVal, setLocalVal] = useState(String(value));
+  function commit(){
+    var n = parseInt(localVal);
+    if(!isNaN(n) && n >= 1 && n <= 100){ onChange(n); }
+    else { setLocalVal(String(value)); }
+  }
+  return(
+    <div style={{display:"flex",alignItems:"center",gap:3,justifyContent:"center"}}>
+      <input className="pct-input" type="number" min={1} max={100} value={localVal}
+        onChange={function(e){setLocalVal(e.target.value);}}
+        onBlur={commit}
+        onKeyDown={function(e){if(e.key==="Enter")commit();}}
+      />
+      <span style={{color:"rgba(255,255,255,0.5)",fontSize:10}}>%</span>
+    </div>
+  );
+}
+
 function App(){
   const [gameData,setGameData]=useState(null);
   const [activeGame,setActiveGame]=useState("trap");
@@ -222,6 +253,7 @@ function App(){
   const [loaded,setLoaded]=useState(false);
   const [viewKey,setViewKey]=useState(0);
   const [sortMode,setSortMode]=useState("handicap");
+  const [pct,setPct]=useState(80);
 
   useEffect(function(){
     async function load(){
@@ -260,9 +292,9 @@ function App(){
   var withStats=useMemo(function(){
     return shooters.map(function(s){
       var sr=roundsByShooter[s.id]||[];
-      return Object.assign({},s,calcStats(sr,game.maxScore),{allRounds:sr,last10:sr.slice(-10)});
+      return Object.assign({},s,calcStats(sr,game.maxScore,pct),{allRounds:sr,last10:sr.slice(-10)});
     });
-  },[shooters,roundsByShooter,game.maxScore]);
+  },[shooters,roundsByShooter,game.maxScore,pct]);
 
   var leaderboard=useMemo(function(){
     return withStats.slice().sort(function(a,b){
@@ -320,8 +352,12 @@ function App(){
 
   var profileShooter=shooters.find(function(s){return s.id===selectedShooter;});
   var profileRounds=(roundsByShooter[selectedShooter]||[]).slice().reverse();
-  var profileStats=selectedShooter?calcStats(roundsByShooter[selectedShooter]||[],game.maxScore):null;
+  var profileStats=selectedShooter?calcStats(roundsByShooter[selectedShooter]||[],game.maxScore,pct):null;
   var today=new Date().toLocaleDateString("en-US",{weekday:"long",year:"numeric",month:"long",day:"numeric"});
+
+  // Dynamic column header labels
+  var pctLabel = pct+"% Avg";
+  var pct50Label = pct+"% Avg / 50";
 
   if(!gameData)return <div style={{padding:40,color:C.green,fontFamily:"Playfair Display, serif",fontSize:18}}>Loading…</div>;
 
@@ -389,10 +425,12 @@ function App(){
                     {[10,9,8,7,6,5,4,3,2,1].map(function(n){return<th key={n} style={Object.assign({},TH,{color:"rgba(255,255,255,0.5)",background:"rgba(0,0,0,0.25)",minWidth:38,fontSize:11,fontWeight:400})}>{"R"+n}</th>;})}
                     <th style={Object.assign({},TH,{color:"rgba(255,255,255,0.9)",background:"rgba(44,74,46,0.6)",borderLeft:"1px solid rgba(255,255,255,0.2)",minWidth:90,fontSize:11})}>Latest Round</th>
                     <th style={Object.assign({},TH,{color:"rgba(255,255,255,0.8)",background:"rgba(0,0,0,0.15)",borderLeft:"1px solid rgba(255,255,255,0.1)",minWidth:75})}>Avg Score</th>
-                    <th style={Object.assign({},TH,{color:"rgba(255,255,255,0.8)",background:"rgba(0,0,0,0.15)",minWidth:70})}>80% Avg</th>
+                    <th style={Object.assign({},TH,{color:"rgba(255,255,255,0.8)",background:"rgba(0,0,0,0.15)",minWidth:90})}>{pctLabel}</th>
                     {game.showAvg50&&<th style={Object.assign({},TH,{color:"rgba(255,255,255,0.8)",background:"rgba(0,0,0,0.15)",minWidth:70})}>Avg / 50</th>}
-                    {game.showAvg50&&<th style={Object.assign({},TH,{color:"rgba(255,255,255,0.8)",background:"rgba(0,0,0,0.15)",minWidth:85})}>80% Avg / 50</th>}
-                    <th style={Object.assign({},TH,{width:50})}></th>
+                    {game.showAvg50&&<th style={Object.assign({},TH,{color:"rgba(255,255,255,0.8)",background:"rgba(0,0,0,0.15)",minWidth:100})}>{pct50Label}</th>}
+                    <th style={Object.assign({},TH,{width:50})}>
+                      <PctInput value={pct} onChange={setPct}/>
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -415,9 +453,9 @@ function App(){
                           </td>);})}
                         <InlineInput key={s.id+"-"+activeGame} shooterId={s.id} onCommit={logInlineRound} rowBg={inlineBg} maxScore={game.maxScore}/>
                         <td style={Object.assign({},TD,{textAlign:"center",background:statBg,borderLeft:"1px solid "+C.border})}>{s.avg||<span style={{color:C.textLight}}>—</span>}</td>
-                        <td style={Object.assign({},TD,{textAlign:"center",background:statBg})}>{s.avg80||<span style={{color:C.textLight}}>—</span>}</td>
+                        <td style={Object.assign({},TD,{textAlign:"center",background:statBg})}>{s.avgPct||<span style={{color:C.textLight}}>—</span>}</td>
                         {game.showAvg50&&<td style={Object.assign({},TD,{textAlign:"center",background:statBg})}>{s.avg50||<span style={{color:C.textLight}}>—</span>}</td>}
-                        {game.showAvg50&&<td style={Object.assign({},TD,{textAlign:"center",background:statBg})}>{s.avg50_80||<span style={{color:C.textLight}}>—</span>}</td>}
+                        {game.showAvg50&&<td style={Object.assign({},TD,{textAlign:"center",background:statBg})}>{s.avg50Pct||<span style={{color:C.textLight}}>—</span>}</td>}
                         <td style={Object.assign({},TD,{textAlign:"center"})} onClick={function(e){e.stopPropagation();}}>
                           <button className="gb" onClick={function(sid){return function(){setSelectedShooter(sid);switchView("profile");};}(s.id)}
                             style={{background:"none",border:"1px solid "+C.border,color:C.textMuted,borderRadius:3,padding:"3px 8px",cursor:"pointer",fontSize:11}}>View</button>
