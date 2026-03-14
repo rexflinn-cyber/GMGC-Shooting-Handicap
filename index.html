@@ -412,7 +412,7 @@ function App() {
       XLSX.utils.book_append_sheet(wb, ws, gd.label);
     });
     var dt = new Date().toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}).replace(/,/g,"").replace(/ /g,"_");
-    XLSX.writeFile(wb, "GMGC_Shooting_"+dt+".xlsx");
+    XLSX.writeFile(wb, "GMGC_Shooting_"+dt+".xlsx", {cellStyles:true});
   }
 
   var profSh     = shooters.find(function(s){return s.id===sel;});
