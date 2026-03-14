@@ -1,93 +1,96 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>GMGC Shooting Handicap Tracker</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-* { box-sizing: border-box; } body { margin: 0; background: #f7f5f0; font-family: Lato, sans-serif; }
-.rh { transition: background 0.15s; cursor: pointer; } .rh:hover { background: #f0ede4 !important; }
-.nb { transition: all 0.18s; border-bottom: 2px solid transparent !important; }
-.nb:hover { color: #2c4a2e !important; border-bottom: 2px solid #8b7340 !important; }
-.nb.active { color: #2c4a2e !important; border-bottom: 2px solid #2c4a2e !important; font-weight: 700 !important; }
-.gtab { transition: all 0.2s; border-bottom: 3px solid transparent; }
-.gtab:hover { background: rgba(44,74,46,0.06) !important; color: #2c4a2e !important; }
-.gtab.gactive { color: #2c4a2e !important; border-bottom: 3px solid #2c4a2e !important; font-weight: 700 !important; background: rgba(44,74,46,0.04) !important; }
-.ab { transition: all 0.18s; } .ab:hover { background: #1e3320 !important; box-shadow: 0 4px 12px rgba(44,74,46,0.25); transform: translateY(-1px); }
-.gb { transition: all 0.15s; } .gb:hover { color: #2c4a2e !important; border-color: #2c4a2e !important; }
-.if:focus { outline: none !important; border-color: #2c4a2e !important; box-shadow: 0 0 0 3px rgba(44,74,46,0.1) !important; }
-.db:hover { color: #c0392b !important; } .sb:hover { background: rgba(44,74,46,0.08) !important; }
-.ii { width: 52px; text-align: center; padding: 4px; border-radius: 4px; border: 1px solid #2c4a2e; background: #fff; color: #2c4a2e; font-weight: 700; font-size: 13px; font-family: Lato, sans-serif; outline: none; }
-.ii:focus { box-shadow: 0 0 0 2px rgba(44,74,46,0.2); }
-.pct-input { width: 36px; text-align: center; padding: 2px 4px; border-radius: 3px; border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.12); color: #fff; font-weight: 700; font-size: 11px; font-family: Lato, sans-serif; outline: none; -moz-appearance: textfield; }
-.pct-input:focus { border-color: rgba(255,255,255,0.7); background: rgba(255,255,255,0.2); }
-.pct-input::-webkit-inner-spin-button, .pct-input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-@keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
-@keyframes toastIn { from { opacity:0; transform:translateX(20px); } to { opacity:1; transform:translateX(0); } }
-.fi { animation: fadeIn 0.3s ease both; } .ti { animation: toastIn 0.25s ease both; }
+*{box-sizing:border-box}body{margin:0;background:#f7f5f0;font-family:Lato,sans-serif}
+.rh{transition:background .15s;cursor:pointer}.rh:hover{background:#f0ede4!important}
+.nb{transition:all .18s;border-bottom:2px solid transparent!important}
+.nb:hover{color:#2c4a2e!important;border-bottom:2px solid #8b7340!important}
+.nb.active{color:#2c4a2e!important;border-bottom:2px solid #2c4a2e!important;font-weight:700!important}
+.gtab{transition:all .2s;border-bottom:3px solid transparent}
+.gtab:hover{background:rgba(44,74,46,.06)!important;color:#2c4a2e!important}
+.gtab.gactive{color:#2c4a2e!important;border-bottom:3px solid #2c4a2e!important;font-weight:700!important;background:rgba(44,74,46,.04)!important}
+.ab{transition:all .18s}.ab:hover{background:#1e3320!important;box-shadow:0 4px 12px rgba(44,74,46,.25);transform:translateY(-1px)}
+.gb{transition:all .15s}.gb:hover{color:#2c4a2e!important;border-color:#2c4a2e!important}
+.if:focus{outline:none!important;border-color:#2c4a2e!important;box-shadow:0 0 0 3px rgba(44,74,46,.1)!important}
+.db:hover{color:#c0392b!important}.sb:hover{background:rgba(44,74,46,.08)!important}
+.ii{width:52px;text-align:center;padding:4px;border-radius:4px;border:1px solid #2c4a2e;background:#fff;color:#2c4a2e;font-weight:700;font-size:13px;font-family:Lato,sans-serif;outline:none}
+.ii:focus{box-shadow:0 0 0 2px rgba(44,74,46,.2)}
+.pct-input{width:36px;text-align:center;padding:2px 4px;border-radius:3px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.12);color:#fff;font-weight:700;font-size:11px;font-family:Lato,sans-serif;outline:none;-moz-appearance:textfield}
+.pct-input:focus{border-color:rgba(255,255,255,.7);background:rgba(255,255,255,.2)}
+.pct-input::-webkit-inner-spin-button,.pct-input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes toastIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+.fi{animation:fadeIn .3s ease both}.ti{animation:toastIn .25s ease both}
 </style>
 </head>
 <body>
 <div id="root"></div>
 <script type="text/babel">
 const { useState, useEffect, useMemo, useCallback } = React;
+
+// ── Constants ────────────────────────────────────────────────────────────────
+const SK = "gmgc-v3";
+const PASSWORD = "AndyWoody";
 const SUPABASE_URL = "https://egfownzrjchxboigritv.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVnZm93bnpyamNoeGJvaWdyaXR2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5NzYzMzgsImV4cCI6MjA4ODU1MjMzOH0.Td6zTVwLnPxie0A6xZClIjf8DrUiErKU-KI9a_KV950";
 const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
 const C = {
-  bg:"#f7f5f0",bgCard:"#ffffff",green:"#2c4a2e",greenDark:"#1e3320",
-  gold:"#8b7340",text:"#2a2a2a",textMuted:"#6b6b6b",textLight:"#999",
-  border:"#d4cfc4",rowA:"#ffffff",rowB:"#f9f7f3",
-  tableHead:"#2c4a2e",red:"#8b2020",scoreGreen:"#2d6a4f",
+  bg:"#f7f5f0", bgCard:"#fff", green:"#2c4a2e", gold:"#8b7340",
+  text:"#2a2a2a", textMuted:"#6b6b6b", textLight:"#999",
+  border:"#d4cfc4", rowA:"#fff", rowB:"#f9f7f3",
+  tableHead:"#2c4a2e", red:"#8b2020", scoreGreen:"#2d6a4f"
 };
-const MASTER_MEMBERS = [
-  {lastName:"Baker",firstName:"Sam"},{lastName:"Baker",firstName:"Charlie"},
-  {lastName:"Boss",firstName:"Peter"},{lastName:"Brooks",firstName:"Clint"},
-  {lastName:"Brooks",firstName:"Max"},{lastName:"Cadwalader",firstName:"Kent"},
-  {lastName:"Campbell",firstName:"Trey"},{lastName:"Christine",firstName:"Kevin (28 gauge)"},
-  {lastName:"Christine",firstName:"Kevin (12 & 20 gauge)"},{lastName:"Christine",firstName:"Hoop"},
-  {lastName:"Christine",firstName:"Elle"},{lastName:"Conrad",firstName:"Andy"},
-  {lastName:"Crockett",firstName:"Max"},{lastName:"Cuddeback",firstName:"Jack"},
-  {lastName:"Cuddleback",firstName:"John"},{lastName:"Curran",firstName:"Bill"},
-  {lastName:"Curry",firstName:"David"},{lastName:"Cutler",firstName:"Peter"},
-  {lastName:"Cutler",firstName:"Ned"},{lastName:"DeForest-Keys",firstName:"David"},
-  {lastName:"Doherty",firstName:"Tom"},{lastName:"Evans",firstName:"Scott"},
-  {lastName:"Fleitas",firstName:"Bo"},{lastName:"Flinn",firstName:"Rex"},
-  {lastName:"Flinn",firstName:"Mason"},{lastName:"Flinn",firstName:"Mason (28 gauge)"},
-  {lastName:"Flinn",firstName:"Mason (12 gauge)"},{lastName:"Flinn",firstName:"Wells"},
-  {lastName:"Frazier",firstName:"Graeme"},{lastName:"Goldenberg",firstName:"Marc"},
-  {lastName:"Good",firstName:"Ellie"},{lastName:"Gowan",firstName:"Henry"},
-  {lastName:"Gowan",firstName:"Fig"},{lastName:"Gowen",firstName:"Jamie"},
-  {lastName:"Griffith",firstName:"Dick"},{lastName:"Griffith",firstName:"Peter"},
-  {lastName:"Griffith",firstName:"Rich"},{lastName:"Griffith",firstName:"Rick"},
-  {lastName:"Hamilton",firstName:"Nat"},{lastName:"Hamilton",firstName:"Sam"},
-  {lastName:"Harrington",firstName:"Bill"},{lastName:"Hipp",firstName:"Tom"},
-  {lastName:"Hipp",firstName:"Tom (2)"},{lastName:"Hole",firstName:"Jamie"},
-  {lastName:"Hole",firstName:"Sam"},{lastName:"Hunt",firstName:"Hayes"},
-  {lastName:"Ingersall",firstName:"Warren"},{lastName:"Kathol",firstName:"Rob"},
-  {lastName:"Laphier",firstName:"Ned"},{lastName:"Laveran",firstName:"George"},
-  {lastName:"Laveran",firstName:"Hatte"},{lastName:"Laveran",firstName:"Peter"},
-  {lastName:"Laveran",firstName:"Pierce"},{lastName:"Laveran",firstName:"Rudy"},
-  {lastName:"Lisle",firstName:"John"},{lastName:"Lisle",firstName:"Peter"},
-  {lastName:"MacCall",firstName:"Grant"},{lastName:"MacCall",firstName:"James"},
-  {lastName:"MacCall",firstName:"Tim"},{lastName:"Maner",firstName:"Skip"},
-  {lastName:"McNamara",firstName:"Bill"},{lastName:"McSparran",firstName:"John"},
-  {lastName:"Murdoch",firstName:"Britt"},{lastName:"Myers",firstName:"Brett"},
-  {lastName:"Neel",firstName:"Carlton"},{lastName:"Orr",firstName:"John"},
-  {lastName:"Purcell",firstName:"Andrew"},{lastName:"Rantanen",firstName:"Grady"},
-  {lastName:"Rantanen",firstName:"Jamie"},{lastName:"Ryan",firstName:"Kyle"},
-  {lastName:"Sloan",firstName:"Jeff"},{lastName:"Sloan",firstName:"Will"},
-  {lastName:"White",firstName:"Todd"},{lastName:"Wischer",firstName:"Kyle"},
-  {lastName:"Yaeger",firstName:"Jeff"},{lastName:"Yaeger",firstName:"Paige"},
-  {lastName:"Yager",firstName:"Paige"},{lastName:"Yager",firstName:"Spencer"},
+const GAMES = {
+  trap:      { label:"Trap Shooting", maxScore:25, showAvg50:true  },
+  altimus:   { label:"Altimus",       maxScore:25, showAvg50:true  },
+  doubletrap:{ label:"Double Trap",   maxScore:50, showAvg50:false }
+};
+const TH = { padding:"11px 10px", fontWeight:600, fontSize:12, letterSpacing:.5, textAlign:"center", borderBottom:"1px solid rgba(255,255,255,.1)" };
+const TD = { padding:"10px 10px", fontSize:13, borderBottom:"1px solid #ece9e0" };
+const LST = { display:"block", marginBottom:7, color:C.textMuted, fontSize:11, letterSpacing:1.5, textTransform:"uppercase" };
+const IST = { width:"100%", padding:"11px 13px", borderRadius:4, border:"1px solid "+C.border, background:C.bg, color:C.text, fontSize:15, fontFamily:"Lato,sans-serif" };
+
+// ── Seed data ─────────────────────────────────────────────────────────────────
+const MM = [
+  {l:"Baker",f:"Sam"},{l:"Baker",f:"Charlie"},{l:"Boss",f:"Peter"},
+  {l:"Brooks",f:"Clint"},{l:"Brooks",f:"Max"},{l:"Cadwalader",f:"Kent"},
+  {l:"Campbell",f:"Trey"},{l:"Christine",f:"Kevin (28 gauge)"},
+  {l:"Christine",f:"Kevin (12 & 20 gauge)"},{l:"Christine",f:"Hoop"},
+  {l:"Christine",f:"Elle"},{l:"Conrad",f:"Andy"},{l:"Crockett",f:"Max"},
+  {l:"Cuddeback",f:"Jack"},{l:"Cuddleback",f:"John"},{l:"Curran",f:"Bill"},
+  {l:"Curry",f:"David"},{l:"Cutler",f:"Peter"},{l:"Cutler",f:"Ned"},
+  {l:"DeForest-Keys",f:"David"},{l:"Doherty",f:"Tom"},{l:"Evans",f:"Scott"},
+  {l:"Fleitas",f:"Bo"},{l:"Flinn",f:"Rex"},{l:"Flinn",f:"Mason"},
+  {l:"Flinn",f:"Mason (28 gauge)"},{l:"Flinn",f:"Mason (12 gauge)"},
+  {l:"Flinn",f:"Wells"},{l:"Frazier",f:"Graeme"},{l:"Goldenberg",f:"Marc"},
+  {l:"Good",f:"Ellie"},{l:"Gowan",f:"Henry"},{l:"Gowan",f:"Fig"},
+  {l:"Gowen",f:"Jamie"},{l:"Griffith",f:"Dick"},{l:"Griffith",f:"Peter"},
+  {l:"Griffith",f:"Rich"},{l:"Griffith",f:"Rick"},{l:"Hamilton",f:"Nat"},
+  {l:"Hamilton",f:"Sam"},{l:"Harrington",f:"Bill"},{l:"Hipp",f:"Tom"},
+  {l:"Hipp",f:"Tom (2)"},{l:"Hole",f:"Jamie"},{l:"Hole",f:"Sam"},
+  {l:"Hunt",f:"Hayes"},{l:"Ingersall",f:"Warren"},{l:"Kathol",f:"Rob"},
+  {l:"Laphier",f:"Ned"},{l:"Laveran",f:"George"},{l:"Laveran",f:"Hatte"},
+  {l:"Laveran",f:"Peter"},{l:"Laveran",f:"Pierce"},{l:"Laveran",f:"Rudy"},
+  {l:"Lisle",f:"John"},{l:"Lisle",f:"Peter"},{l:"MacCall",f:"Grant"},
+  {l:"MacCall",f:"James"},{l:"MacCall",f:"Tim"},{l:"Maner",f:"Skip"},
+  {l:"McNamara",f:"Bill"},{l:"McSparran",f:"John"},{l:"Murdoch",f:"Britt"},
+  {l:"Myers",f:"Brett"},{l:"Neel",f:"Carlton"},{l:"Orr",f:"John"},
+  {l:"Purcell",f:"Andrew"},{l:"Rantanen",f:"Grady"},{l:"Rantanen",f:"Jamie"},
+  {l:"Ryan",f:"Kyle"},{l:"Sloan",f:"Jeff"},{l:"Sloan",f:"Will"},
+  {l:"White",f:"Todd"},{l:"Wischer",f:"Kyle"},{l:"Yaeger",f:"Jeff"},
+  {l:"Yaeger",f:"Paige"},{l:"Yager",f:"Paige"},{l:"Yager",f:"Spencer"}
 ];
-const TRAP_SCORES = {
+const TS = {
   "Boss-Peter":[10,12,19,14,13,11,7,17,16,15],"Brooks-Clint":[17,20],
   "Cadwalader-Kent":[19],"Cuddeback-Jack":[20,22,16,8,11,19,18,14,11],
   "Cuddleback-John":[15,15,21,21,21,20,17,11,18,16],"Cutler-Peter":[14,14,14,20,24,17,17,19,18,16],
@@ -104,9 +107,9 @@ const TRAP_SCORES = {
   "McNamara-Bill":[16,18,16,15,16,20],"Murdoch-Britt":[17,23],"Neel-Carlton":[20,21,21,22],
   "Orr-John":[18],"Purcell-Andrew":[12],"Rantanen-Grady":[16,16],"Ryan-Kyle":[17,15],
   "Sloan-Jeff":[12,17,15,16],"Wischer-Kyle":[8],"Yaeger-Jeff":[11,15,18],
-  "Yager-Paige":[15,9,2,9,15,20],"Yager-Spencer":[20,16,22],
+  "Yager-Paige":[15,9,2,9,15,20],"Yager-Spencer":[20,16,22]
 };
-const ALTIMUS_SCORES = {
+const AS = {
   "Baker-Sam":[20,18,19,18,17,18,14,22],"Baker-Charlie":[12,12,14,14,17],
   "Boss-Peter":[20,19,19,20,20,23,18,20,18,19],"Brooks-Clint":[13,10,19,18,20,16,15,18,15,22],
   "Brooks-Max":[19,19],"Cadwalader-Kent":[18],"Campbell-Trey":[1,2],
@@ -137,414 +140,534 @@ const ALTIMUS_SCORES = {
   "Ryan-Kyle":[17,19,14],"Sloan-Jeff":[21,21,18,18,21,21,21,20,19,19],
   "Sloan-Will":[11,14],"Hipp-Tom (2)":[20,20],"Wischer-Kyle":[12,13],
   "Yaeger-Jeff":[10,15,10,15,11,12,18],"Yaeger-Paige":[14,12,14,14,12,16],
-  "White-Todd":[20,18,18],
+  "White-Todd":[20,18,18]
 };
-const DOUBLETRAP_SCORES = {
+const DS = {
   "Boss-Peter":[30,28,28],"Brooks-Clint":[28,20,28],"Cadwalader-Kent":[22,25],
   "Cuddeback-Jack":[15,17],"Cuddleback-John":[24,20],"Doherty-Tom":[31],
   "Flinn-Mason":[31,34,30,36,43],"Goldenberg-Marc":[30],"Harrington-Bill":[37,33],
   "Laveran-George":[14],"Laveran-Hatte":[28,21],"Laveran-Peter":[21,23,28],
   "Laveran-Pierce":[30],"Laveran-Rudy":[25,26,33],"Lisle-John":[26,25],
-  "Lisle-Peter":[17],"Maner-Skip":[16],"Neel-Carlton":[40],
+  "Lisle-Peter":[17],"Maner-Skip":[16],"Neel-Carlton":[40]
 };
-const GAMES = {
-  trap:{label:"Trap Shooting",maxScore:25,showAvg50:true},
-  altimus:{label:"Altimus",maxScore:25,showAvg50:true},
-  doubletrap:{label:"Double Trap",maxScore:50,showAvg50:false},
-};
-const SCORE_MAPS = {trap:TRAP_SCORES,altimus:ALTIMUS_SCORES,doubletrap:DOUBLETRAP_SCORES};
-function memberId(m){return m.lastName+"-"+m.firstName;}
-function buildInitialData(){
-  var shooters=MASTER_MEMBERS.map(function(m){return{id:memberId(m),lastName:m.lastName,firstName:m.firstName};});
-  var data={shooters:shooters};
-  Object.keys(GAMES).forEach(function(g){
-    var rounds=[];
-    shooters.forEach(function(s){
-      var scores=(SCORE_MAPS[g]||{})[s.id]||[];
-      scores.forEach(function(score,i){rounds.push({id:s.id+"-"+g+i,shooterId:s.id,score:score,date:"Prior season"});});
-    });
-    data[g]={rounds:rounds};
-  });
-  return data;
+const SM = { trap:TS, altimus:AS, doubletrap:DS };
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function mid(m) { return m.l + "-" + m.f; }
+function fn(s) { return s ? (s.lastName||"") + ", " + (s.firstName||"") : ""; }
+function scoreColor(sc, max) {
+  var p = sc/max;
+  return p >= .88 ? C.scoreGreen : p >= .6 ? "#000" : C.red;
 }
-var TH={padding:"11px 10px",fontWeight:600,fontSize:12,letterSpacing:0.5,textAlign:"center",borderBottom:"1px solid rgba(255,255,255,0.1)"};
-var TD={padding:"10px 10px",fontSize:13,borderBottom:"1px solid #ece9e0"};
-var LST={display:"block",marginBottom:7,color:C.textMuted,fontSize:11,letterSpacing:1.5,textTransform:"uppercase"};
-var IST={width:"100%",padding:"11px 13px",borderRadius:4,border:"1px solid "+C.border,background:C.bg,color:C.text,fontSize:15,fontFamily:"Lato, sans-serif"};
-function scoreColor(sc,max){var p=sc/max;return p>=0.88?C.scoreGreen:p>=0.60?"#000000":C.red;}
-function handicapColor(h){return parseFloat(h)<=3?C.scoreGreen:parseFloat(h)<=7?C.gold:C.red;}
-function fullName(s){if(!s)return "";return(s.lastName||"")+", "+(s.firstName||"");}
-function calcStats(rs,maxScore,pct){
-  if(!rs.length)return{avg:null,handicap:null,count:0,avgPct:null,avg50:null,avg50Pct:null};
-  var avg=rs.reduce(function(s,x){return s+x.score;},0)/rs.length;
-  var f=pct/100;
-  return{
-    avg:avg.toFixed(1),
-    handicap:Math.abs(maxScore-avg).toFixed(1),
-    count:rs.length,
-    avgPct:(avg*f).toFixed(1),
-    avg50:(avg*2).toFixed(1),
-    avg50Pct:(avg*2*f).toFixed(1),
+function hColor(h) { return parseFloat(h)<=3 ? C.scoreGreen : parseFloat(h)<=7 ? C.gold : C.red; }
+function calcStats(rs, max, pct) {
+  if (!rs.length) return { avg:null, handicap:null, count:0, avgPct:null, avg50:null, avg50Pct:null };
+  var avg = rs.reduce(function(s,x){return s+x.score;},0) / rs.length, f = pct/100;
+  return {
+    avg: avg.toFixed(1), handicap: Math.abs(max-avg).toFixed(1), count: rs.length,
+    avgPct: (avg*f).toFixed(1), avg50: (avg*2).toFixed(1), avg50Pct: (avg*2*f).toFixed(1)
   };
 }
-function InlineInput({shooterId,onCommit,rowBg,maxScore}){
-  const [val,setVal]=useState("");
-  const handleCommit=useCallback(function(){
-    var score=parseInt(val);
-    if(!isNaN(score)&&score>=0&&score<=maxScore){onCommit(shooterId,score);setVal("");}
+function buildRbm(rounds) {
+  var m = {};
+  rounds.forEach(function(r){ if(!m[r.shooterId]) m[r.shooterId]=[]; m[r.shooterId].push(r); });
+  return m;
+}
+function buildInit() {
+  var shooters = MM.map(function(m){ return {id:mid(m), lastName:m.l, firstName:m.f}; });
+  var d = { shooters:shooters };
+  Object.keys(GAMES).forEach(function(g){
+    var rounds = [];
+    shooters.forEach(function(s){
+      (SM[g][s.id]||[]).forEach(function(sc,i){
+        rounds.push({id:s.id+"-"+g+i, shooterId:s.id, score:sc, date:"Prior season"});
+      });
+    });
+    d[g] = { rounds:rounds };
+  });
+  return d;
+}
+
+// ── Small components ──────────────────────────────────────────────────────────
+function InlineInput({shooterId, onCommit, rowBg, maxScore, authed}) {
+  const [val, setVal] = useState("");
+  const commit = useCallback(function(){
+    var sc = parseInt(val);
+    if (!isNaN(sc) && sc>=0 && sc<=maxScore) { onCommit(shooterId, sc); setVal(""); }
     else setVal("");
-  },[val,shooterId,onCommit,maxScore]);
-  return(
+  }, [val, shooterId, onCommit, maxScore]);
+  if (!authed) return (
+    <td style={Object.assign({},TD,{textAlign:"center",background:rowBg,borderLeft:"2px solid #d4cfc4"})}>
+      <span style={{color:"#ccc",fontSize:16}}>·</span>
+    </td>
+  );
+  return (
     <td style={Object.assign({},TD,{textAlign:"center",background:rowBg,borderLeft:"2px solid #a8cba8",padding:"6px 8px"})}
       onClick={function(e){e.stopPropagation();}}>
       <input className="ii" type="number" min={0} max={maxScore} placeholder="—" value={val}
         onChange={function(e){setVal(e.target.value);}}
-        onKeyDown={function(e){if(e.key==="Enter")handleCommit();}}
-        onBlur={handleCommit}/>
+        onKeyDown={function(e){if(e.key==="Enter")commit();}}
+        onBlur={commit}/>
     </td>
   );
 }
-function SectionHeader({title,small}){
-  return(
+function PctInput({value, onChange}) {
+  const [v, setV] = useState(String(value));
+  function commit(){ var n=parseInt(v); if(!isNaN(n)&&n>=1&&n<=100) onChange(n); else setV(String(value)); }
+  return (
+    <div style={{display:"flex",alignItems:"center",gap:3,justifyContent:"center"}}>
+      <input className="pct-input" type="number" min={1} max={100} value={v}
+        onChange={function(e){setV(e.target.value);}} onBlur={commit}
+        onKeyDown={function(e){if(e.key==="Enter")commit();}}/>
+      <span style={{color:"rgba(255,255,255,.5)",fontSize:10}}>%</span>
+    </div>
+  );
+}
+function SectionHeader({title, small}) {
+  return (
     <div style={{display:"flex",alignItems:"center",gap:14,marginBottom:small?0:20}}>
-      <h2 style={{margin:0,fontSize:small?15:20,color:C.green,fontFamily:"Playfair Display, serif",fontWeight:700}}>{title}</h2>
+      <h2 style={{margin:0,fontSize:small?15:20,color:C.green,fontFamily:"Playfair Display,serif",fontWeight:700}}>{title}</h2>
       <div style={{flex:1,height:1,background:C.border}}/>
     </div>
   );
 }
-function Stat({label,value,highlight}){
-  return(
+function Stat({label, value, highlight}) {
+  return (
     <div>
       <div style={{color:C.textMuted,fontSize:10,marginBottom:5,letterSpacing:2,textTransform:"uppercase"}}>{label}</div>
-      <div style={{fontSize:32,fontWeight:700,color:highlight?C.green:C.text,fontFamily:"Playfair Display, serif"}}>{value}</div>
+      <div style={{fontSize:32,fontWeight:700,color:highlight?C.green:C.text,fontFamily:"Playfair Display,serif"}}>{value}</div>
     </div>
   );
 }
 
-function PctInput({value, onChange}){
-  const [localVal, setLocalVal] = useState(String(value));
-  function commit(){
-    var n = parseInt(localVal);
-    if(!isNaN(n) && n >= 1 && n <= 100){ onChange(n); }
-    else { setLocalVal(String(value)); }
-  }
-  return(
-    <div style={{display:"flex",alignItems:"center",gap:3,justifyContent:"center"}}>
-      <input className="pct-input" type="number" min={1} max={100} value={localVal}
-        onChange={function(e){setLocalVal(e.target.value);}}
-        onBlur={commit}
-        onKeyDown={function(e){if(e.key==="Enter")commit();}}
-      />
-      <span style={{color:"rgba(255,255,255,0.5)",fontSize:10}}>%</span>
-    </div>
-  );
-}
+// ── Main app ──────────────────────────────────────────────────────────────────
+function App() {
+  const [data,    setData]    = useState(null);
+  const [game,    setGame]    = useState("trap");
+  const [view,    setView]    = useState("leaderboard");
+  const [sel,     setSel]     = useState(null);
+  const [lnIn,    setLnIn]    = useState("");
+  const [fnIn,    setFnIn]    = useState("");
+  const [rSid,    setRSid]    = useState("");
+  const [rSc,     setRSc]     = useState("");
+  const [toast,   setToast]   = useState(null);
+  const [loaded,  setLoaded]  = useState(false);
+  const [vk,      setVk]      = useState(0);
+  const [sort,    setSort]    = useState("handicap");
+  const [pct,     setPct]     = useState(80);
+  const [authed,  setAuthed]  = useState(false);
+  const [pwIn,    setPwIn]    = useState("");
+  const [pwErr,   setPwErr]   = useState(false);
+  const [showPw,  setShowPw]  = useState(false);
 
-function App(){
-  const [gameData,setGameData]=useState(null);
-  const [activeGame,setActiveGame]=useState("trap");
-  const [view,setView]=useState("leaderboard");
-  const [selectedShooter,setSelectedShooter]=useState(null);
-  const [lastNameInput,setLastNameInput]=useState("");
-  const [firstNameInput,setFirstNameInput]=useState("");
-  const [roundShooterId,setRoundShooterId]=useState("");
-  const [roundScore,setRoundScore]=useState("");
-  const [toast,setToast]=useState(null);
-  const [loaded,setLoaded]=useState(false);
-  const [viewKey,setViewKey]=useState(0);
-  const [sortMode,setSortMode]=useState("handicap");
-  const [pct,setPct]=useState(80);
-
+  // Load / save
   useEffect(function(){
     async function load(){
-      try{
-        var {data,error}=await db.from("scores").select("data").eq("id","gmgc-v1").single();
-        if(!error&&data&&data.data&&data.data.shooters&&data.data.shooters.length){
-          setGameData(data.data);setLoaded(true);return;
-        }
-      }catch(e){}
-      var init=buildInitialData();
-      setGameData(init);
-      setLoaded(true);
+      try {
+        var {data:res,error} = await db.from("scores").select("data").eq("id","gmgc-v1").single();
+        if (!error&&res&&res.data&&res.data.shooters&&res.data.shooters.length){ setData(res.data); setLoaded(true); return; }
+      } catch(e){}
+      setData(buildInit()); setLoaded(true);
     }
     load();
-  },[]);
-
+  }, []);
   useEffect(function(){
-    if(!loaded||!gameData)return;
-    db.from("scores").update({data:gameData,updated_at:new Date().toISOString()}).eq("id","gmgc-v1").then(function(){});
-  },[gameData,loaded]);
+    if (!loaded||!data) return;
+    db.from("scores").update({data:data,updated_at:new Date().toISOString()}).eq("id","gmgc-v1").then(function(){});
+  }, [data, loaded]);
 
-  var game=GAMES[activeGame];
-  var shooters=gameData?gameData.shooters:[];
-  var rounds=gameData?gameData[activeGame].rounds:[];
+  var gDef     = GAMES[game];
+  var shooters = data ? data.shooters : [];
+  var rounds   = data ? data[game].rounds : [];
 
-  function switchView(v){setView(v);setViewKey(function(k){return k+1;});}
-  function switchGame(g){setActiveGame(g);setView("leaderboard");setViewKey(function(k){return k+1;});setSelectedShooter(null);}
-  function showToast(msg){setToast(msg);setTimeout(function(){setToast(null);},2800);}
+  function sv(v)  { setView(v); setVk(function(k){return k+1;}); }
+  function sg(g)  { setGame(g); setView("leaderboard"); setVk(function(k){return k+1;}); setSel(null); }
+  function toast_(m) { setToast(m); setTimeout(function(){setToast(null);}, 2800); }
+  function login()   { if(pwIn===PASSWORD){setAuthed(true);setPwErr(false);setPwIn("");sv("leaderboard");}else{setPwErr(true);setPwIn("");} }
+  function upd(f)    { setData(function(p){return f(p);}); }
 
-  var roundsByShooter=useMemo(function(){
-    var map={};
-    rounds.forEach(function(r){if(!map[r.shooterId])map[r.shooterId]=[];map[r.shooterId].push(r);});
-    return map;
-  },[rounds]);
+  var rbm = useMemo(function(){ return buildRbm(rounds); }, [rounds]);
 
-  var withStats=useMemo(function(){
+  var ws = useMemo(function(){
     return shooters.map(function(s){
-      var sr=roundsByShooter[s.id]||[];
-      return Object.assign({},s,calcStats(sr,game.maxScore,pct),{allRounds:sr,last10:sr.slice(-10)});
+      var sr = rbm[s.id]||[];
+      return Object.assign({}, s, calcStats(sr, gDef.maxScore, pct), {last10:sr.slice(-10)});
     });
-  },[shooters,roundsByShooter,game.maxScore,pct]);
+  }, [shooters, rbm, gDef.maxScore, pct]);
 
-  var leaderboard=useMemo(function(){
-    return withStats.slice().sort(function(a,b){
-      if(sortMode==="alpha")return(a.lastName||"").localeCompare(b.lastName||"");
-      if(a.handicap===null&&b.handicap===null)return(a.lastName||"").localeCompare(b.lastName||"");
-      if(a.handicap===null)return 1;if(b.handicap===null)return -1;
-      return parseFloat(a.handicap)-parseFloat(b.handicap);
+  var lb = useMemo(function(){
+    return ws.slice().sort(function(a,b){
+      if (sort==="alpha") return (a.lastName||"").localeCompare(b.lastName||"");
+      if (a.handicap===null && b.handicap===null) return (a.lastName||"").localeCompare(b.lastName||"");
+      if (a.handicap===null) return 1; if (b.handicap===null) return -1;
+      return parseFloat(a.handicap) - parseFloat(b.handicap);
     });
-  },[withStats,sortMode]);
+  }, [ws, sort]);
 
-  function updateData(updater){setGameData(function(prev){return updater(prev);});}
+  var addShooter = useCallback(function(){
+    var ln=lnIn.trim(), f=fnIn.trim();
+    if (!ln||!f) { toast_("Please enter both names."); return; }
+    var id = ln+"-"+f;
+    if (shooters.find(function(s){return s.id===id;})) { toast_("Member already exists."); return; }
+    upd(function(p){return Object.assign({},p,{shooters:p.shooters.concat([{id,lastName:ln,firstName:f}])});});
+    setLnIn(""); setFnIn(""); toast_(ln+", "+f+" added."); sv("leaderboard");
+  }, [lnIn, fnIn, shooters]);
 
-  var addShooter=useCallback(function(){
-    var ln=lastNameInput.trim(),fn=firstNameInput.trim();
-    if(!ln||!fn){showToast("Please enter both a first and last name.");return;}
-    var id=ln+"-"+fn;
-    if(shooters.find(function(s){return s.id===id;})){showToast("Member already exists.");return;}
-    updateData(function(prev){return Object.assign({},prev,{shooters:prev.shooters.concat([{id,lastName:ln,firstName:fn}])});});
-    setLastNameInput("");setFirstNameInput("");
-    showToast(ln+", "+fn+" added to all games.");
-    switchView("leaderboard");
-  },[lastNameInput,firstNameInput,shooters]);
+  var logRound = useCallback(function(){
+    var sc = parseInt(rSc);
+    if (!rSid||isNaN(sc)||sc<0||sc>gDef.maxScore) { toast_("Select a member and enter a valid score."); return; }
+    var date = new Date().toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});
+    upd(function(p){var g=p[game];return Object.assign({},p,{[game]:{rounds:g.rounds.concat([{id:Date.now().toString(),shooterId:rSid,score:sc,date}])}});});
+    setRSc("");
+    var sh = shooters.find(function(s){return s.id===rSid;});
+    toast_("Score of "+sc+" logged for "+fn(sh)+"."); sv("leaderboard");
+  }, [rSid, rSc, shooters, game, gDef.maxScore]);
 
-  var logRound=useCallback(function(){
-    var score=parseInt(roundScore);
-    if(!roundShooterId||isNaN(score)||score<0||score>game.maxScore){showToast("Please select a member and enter a valid score (0-"+game.maxScore+").");return;}
-    var date=new Date().toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});
-    var nr={id:Date.now().toString(),shooterId:roundShooterId,score,date};
-    updateData(function(prev){var gd=prev[activeGame];return Object.assign({},prev,{[activeGame]:{rounds:gd.rounds.concat([nr])}});});
-    setRoundScore("");
-    var shooter=shooters.find(function(s){return s.id===roundShooterId;});
-    showToast("Score of "+score+" logged for "+fullName(shooter)+".");
-    switchView("leaderboard");
-  },[roundShooterId,roundScore,shooters,activeGame,game.maxScore]);
+  var logInline = useCallback(function(sid, sc){
+    var date = new Date().toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});
+    upd(function(p){var g=p[game];return Object.assign({},p,{[game]:{rounds:g.rounds.concat([{id:Date.now().toString(),shooterId:sid,score:sc,date}])}});});
+    var sh = shooters.find(function(s){return s.id===sid;});
+    toast_("Score of "+sc+" logged for "+fn(sh)+".");
+  }, [shooters, game]);
 
-  var logInlineRound=useCallback(function(shooterId,score){
-    var date=new Date().toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});
-    var nr={id:Date.now().toString(),shooterId,score,date};
-    updateData(function(prev){var gd=prev[activeGame];return Object.assign({},prev,{[activeGame]:{rounds:gd.rounds.concat([nr])}});});
-    var shooter=shooters.find(function(s){return s.id===shooterId;});
-    showToast("Score of "+score+" logged for "+fullName(shooter)+".");
-  },[shooters,activeGame]);
-
-  function deleteShooter(id){
-    updateData(function(prev){
-      var next=Object.assign({},prev,{shooters:prev.shooters.filter(function(s){return s.id!==id;})});
-      Object.keys(GAMES).forEach(function(g){next[g]={rounds:prev[g].rounds.filter(function(r){return r.shooterId!==id;})};});
-      return next;
-    });
-    switchView("leaderboard");
+  function delShooter(id) {
+    upd(function(p){
+      var n = Object.assign({},p,{shooters:p.shooters.filter(function(s){return s.id!==id;})});
+      Object.keys(GAMES).forEach(function(g){n[g]={rounds:p[g].rounds.filter(function(r){return r.shooterId!==id;})};});
+      return n;
+    }); sv("leaderboard");
   }
-  function deleteRound(id){
-    updateData(function(prev){var gd=prev[activeGame];return Object.assign({},prev,{[activeGame]:{rounds:gd.rounds.filter(function(r){return r.id!==id;})}});});
+  function delRound(id) {
+    upd(function(p){var g=p[game];return Object.assign({},p,{[game]:{rounds:g.rounds.filter(function(r){return r.id!==id;})}});});
   }
 
-  var profileShooter=shooters.find(function(s){return s.id===selectedShooter;});
-  var profileRounds=(roundsByShooter[selectedShooter]||[]).slice().reverse();
-  var profileStats=selectedShooter?calcStats(roundsByShooter[selectedShooter]||[],game.maxScore,pct):null;
-  var today=new Date().toLocaleDateString("en-US",{weekday:"long",year:"numeric",month:"long",day:"numeric"});
+  // Excel export
+  function exportExcel() {
+    var wb = XLSX.utils.book_new();
+    Object.keys(GAMES).forEach(function(g){
+      var gd = GAMES[g];
+      var rbm2 = buildRbm(data[g].rounds);
+      var rows = data.shooters.map(function(s){
+        var sr = rbm2[s.id]||[];
+        var stats = calcStats(sr, gd.maxScore, pct);
+        var l10 = sr.slice(-10), filled = [];
+        for (var j=0;j<10;j++) filled.push(l10[l10.length-10+j] ? l10[l10.length-10+j].score : null);
+        return {s, stats, filled};
+      }).sort(function(a,b){
+        if (a.stats.handicap===null&&b.stats.handicap===null) return (a.s.lastName||"").localeCompare(b.s.lastName||"");
+        if (a.stats.handicap===null) return 1; if (b.stats.handicap===null) return -1;
+        return parseFloat(a.stats.handicap)-parseFloat(b.stats.handicap);
+      });
+      var hdrs = ["#","Member","Rounds","Avg Score","Handicap","R10","R9","R8","R7","R6","R5","R4","R3","R2","R1","Avg Score",pct+"% Avg"];
+      if (gd.showAvg50) hdrs = hdrs.concat(["Avg / 50", pct+"% Avg / 50"]);
+      var wsData = [hdrs];
+      rows.forEach(function(r,i){
+        var row = [i+1, fn(r.s), r.stats.count,
+          r.stats.avg?parseFloat(r.stats.avg):null,
+          r.stats.handicap?parseFloat(r.stats.handicap):null];
+        r.filled.forEach(function(v){row.push(v!==null?v:null);});
+        row.push(r.stats.avg?parseFloat(r.stats.avg):null);
+        row.push(r.stats.avgPct?parseFloat(r.stats.avgPct):null);
+        if (gd.showAvg50) { row.push(r.stats.avg50?parseFloat(r.stats.avg50):null); row.push(r.stats.avg50Pct?parseFloat(r.stats.avg50Pct):null); }
+        wsData.push(row);
+      });
+      var ws = XLSX.utils.aoa_to_sheet(wsData);
+      var cols = [{wch:4},{wch:22},{wch:7},{wch:10},{wch:10}];
+      for (var c=0;c<10;c++) cols.push({wch:5});
+      cols.push({wch:10},{wch:10});
+      if (gd.showAvg50) cols.push({wch:10},{wch:12});
+      ws["!cols"] = cols;
+      // Header styles
+      for (var ci=0;ci<hdrs.length;ci++){
+        var addr = XLSX.utils.encode_cell({r:0,c:ci});
+        if (!ws[addr]) continue;
+        var isDark = (ci>=2&&ci<=4)||ci>=15, isScore = ci>=5&&ci<=14;
+        ws[addr].s = {
+          fill:{patternType:"solid",fgColor:{rgb:isScore?"111111":isDark?"1A2E1C":"2C4A2E"}},
+          font:{bold:true,color:{rgb:"FFFFFF"},sz:10},
+          alignment:{horizontal:ci===1?"left":"center",vertical:"center"},
+          border:{bottom:{style:"thin",color:{rgb:"FFFFFF"}}}
+        };
+      }
+      // Data row styles
+      rows.forEach(function(r,ri){
+        var isEven=ri%2===0;
+        var rowBg=isEven?"FFFFFF":"F9F7F3", sBg=isEven?"F4F1EA":"EEEBE1", scBg=isEven?"FAF8F4":"F5F2EC";
+        for (var ci=0;ci<hdrs.length;ci++){
+          var a = XLSX.utils.encode_cell({r:ri+1,c:ci});
+          if (!ws[a]) ws[a]={v:null,t:"z"};
+          var bg=rowBg, fc="2A2A2A", bold=false, ha="center";
+          if (ci===1){ha="left";bold=true;fc="2C4A2E";}
+          else if ((ci>=2&&ci<=4)||ci>=15){bg=sBg;}
+          else if (ci>=5&&ci<=14){
+            bg=scBg;
+            var v=ws[a].v;
+            if (v!==null&&v!==undefined){var p=v/gd.maxScore;fc=p>=.88?"2D6A4F":p>=.6?"000000":"8B2020";bold=true;}
+            else fc="CCCCCC";
+          }
+          if (ci===4&&ws[a].v!==null&&ws[a].v!==undefined){var hv=parseFloat(ws[a].v);fc=hv<=3?"2D6A4F":hv<=7?"8B7340":"8B2020";bold=true;}
+          ws[a].s={fill:{patternType:"solid",fgColor:{rgb:bg}},font:{color:{rgb:fc},bold,sz:11},alignment:{horizontal:ha,vertical:"center"},border:{bottom:{style:"thin",color:{rgb:"ECE9E0"}}}};
+        }
+      });
+      XLSX.utils.book_append_sheet(wb, ws, gd.label);
+    });
+    var dt = new Date().toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}).replace(/,/g,"").replace(/ /g,"_");
+    XLSX.writeFile(wb, "GMGC_Shooting_"+dt+".xlsx");
+  }
 
-  // Dynamic column header labels
-  var pctLabel = pct+"% Avg";
-  var pct50Label = pct+"% Avg / 50";
+  var profSh     = shooters.find(function(s){return s.id===sel;});
+  var profRounds = (rbm[sel]||[]).slice().reverse();
+  var profStats  = sel ? calcStats(rbm[sel]||[], gDef.maxScore, pct) : null;
+  var today      = new Date().toLocaleDateString("en-US",{weekday:"long",year:"numeric",month:"long",day:"numeric"});
+  var pctLabel   = pct+"% Avg", pct50Label = pct+"% Avg / 50";
 
-  if(!gameData)return <div style={{padding:40,color:C.green,fontFamily:"Playfair Display, serif",fontSize:18}}>Loading…</div>;
+  if (!data) return <div style={{padding:40,color:C.green,fontFamily:"Playfair Display,serif",fontSize:18}}>Loading…</div>;
 
-  return(
-    <div style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:"Lato, sans-serif"}}>
+  // ── Render ──────────────────────────────────────────────────────────────────
+  return (
+    <div style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:"Lato,sans-serif"}}>
+
+      {/* Top bar */}
       <div style={{background:C.green,padding:"7px 24px",textAlign:"center"}}>
-        <span style={{color:"rgba(255,255,255,0.7)",fontSize:11,letterSpacing:2,textTransform:"uppercase",fontWeight:300}}>
-          King of Prussia, Pennsylvania &nbsp;·&nbsp; Est. 1916
+        <span style={{color:"rgba(255,255,255,.7)",fontSize:11,letterSpacing:2,textTransform:"uppercase",fontWeight:300}}>
+          King of Prussia, Pennsylvania · Est. 1916
         </span>
       </div>
+
+      {/* Header */}
       <div style={{background:C.bgCard,borderBottom:"1px solid "+C.border,padding:"20px 24px 0"}}>
         <div style={{maxWidth:1100,margin:"0 auto"}}>
           <div style={{display:"flex",alignItems:"center",gap:20,marginBottom:16}}>
             <div>
-              <div style={{fontFamily:"Playfair Display, serif",fontSize:22,fontWeight:700,color:C.green}}>Gulph Mills Golf Club</div>
-              <div style={{fontFamily:"Playfair Display, serif",fontSize:14,fontStyle:"italic",color:C.gold,marginTop:2}}>Shooting Handicap Tracker</div>
+              <div style={{fontFamily:"Playfair Display,serif",fontSize:22,fontWeight:700,color:C.green}}>Gulph Mills Golf Club</div>
+              <div style={{fontFamily:"Playfair Display,serif",fontSize:14,fontStyle:"italic",color:C.gold,marginTop:2}}>Shooting Handicap Tracker</div>
             </div>
             <div style={{marginLeft:"auto",textAlign:"right"}}>
-              <div style={{fontSize:11,color:C.textMuted,fontStyle:"italic",fontFamily:"Playfair Display, serif"}}>{today}</div>
+              <div style={{fontSize:11,color:C.textMuted,fontStyle:"italic",fontFamily:"Playfair Display,serif"}}>{today}</div>
             </div>
           </div>
+
+          {/* Game tabs */}
           <div style={{display:"flex",gap:0,borderBottom:"2px solid "+C.border}}>
             {Object.keys(GAMES).map(function(g){
-              return(<button key={g} className={"gtab"+(activeGame===g?" gactive":"")} onClick={function(){switchGame(g);}}
-                style={{padding:"10px 24px",background:"none",border:"none",borderBottom:"3px solid transparent",color:activeGame===g?C.green:C.textMuted,cursor:"pointer",fontSize:14,fontFamily:"Playfair Display, serif",fontWeight:activeGame===g?700:400,letterSpacing:0.3}}>
-                {GAMES[g].label}</button>);
+              return <button key={g} className={"gtab"+(game===g?" gactive":"")} onClick={function(){sg(g);}}
+                style={{padding:"10px 24px",background:"none",border:"none",borderBottom:"3px solid transparent",color:game===g?C.green:C.textMuted,cursor:"pointer",fontSize:14,fontFamily:"Playfair Display,serif",fontWeight:game===g?700:400}}>
+                {GAMES[g].label}</button>;
             })}
           </div>
+
+          {/* Sub-nav */}
           <div style={{display:"flex",gap:0,borderTop:"1px solid "+C.border}}>
-            {[["Leaderboard","leaderboard"],["Add Member","add-shooter"],["Log Round","log-round"]].map(function(item){
-              return(<button key={item[1]} className={"nb"+(view===item[1]?" active":"")} onClick={function(){switchView(item[1]);}}
-                style={{padding:"10px 20px",background:"none",border:"none",borderBottom:"2px solid transparent",color:view===item[1]?C.green:C.textMuted,cursor:"pointer",fontSize:13,fontFamily:"Lato, sans-serif",fontWeight:view===item[1]?700:400}}>
-                {item[0]}</button>);
+            {["leaderboard","add-shooter","log-round"].map(function(v){
+              if (v!=="leaderboard"&&!authed) return null;
+              var label = v==="leaderboard"?"Leaderboard":v==="add-shooter"?"Add Member":"Log Round";
+              return <button key={v} className={"nb"+(view===v?" active":"")} onClick={function(){sv(v);}}
+                style={{padding:"10px 20px",background:"none",border:"none",borderBottom:"2px solid transparent",color:view===v?C.green:C.textMuted,cursor:"pointer",fontSize:13,fontFamily:"Lato,sans-serif",fontWeight:view===v?700:400}}>
+                {label}</button>;
             })}
+            {!authed && <button className={"nb"+(view==="login"?" active":"")} onClick={function(){sv("login");}}
+              style={{padding:"10px 20px",background:"none",border:"none",borderBottom:"2px solid transparent",color:view==="login"?C.green:C.textMuted,cursor:"pointer",fontSize:13,fontFamily:"Lato,sans-serif",marginLeft:"auto"}}>
+              🔒 Sign In</button>}
+            {authed && <button onClick={function(){setAuthed(false);sv("leaderboard");}}
+              style={{padding:"10px 20px",background:"none",border:"none",color:C.textMuted,cursor:"pointer",fontSize:13,fontFamily:"Lato,sans-serif",marginLeft:"auto"}}>
+              Sign Out</button>}
           </div>
         </div>
       </div>
       <div style={{height:3,background:C.green}}/>
-      {toast&&(<div className="ti" style={{position:"fixed",top:20,right:20,background:C.green,color:"#fff",padding:"11px 20px",borderRadius:4,fontSize:13,fontWeight:600,zIndex:999,boxShadow:"0 4px 16px rgba(0,0,0,0.2)",maxWidth:300}}>{toast}</div>)}
+
+      {/* Toast */}
+      {toast && <div className="ti" style={{position:"fixed",top:20,right:20,background:C.green,color:"#fff",padding:"11px 20px",borderRadius:4,fontSize:13,fontWeight:600,zIndex:999,boxShadow:"0 4px 16px rgba(0,0,0,.2)",maxWidth:300}}>{toast}</div>}
+
+      {/* Content */}
       <div style={{maxWidth:1100,margin:"0 auto",padding:"32px 16px"}}>
         <div style={{display:"flex",alignItems:"center",gap:14,marginBottom:20}}>
-          <div style={{fontSize:11,color:C.textMuted,letterSpacing:2,textTransform:"uppercase"}}>{game.label} &nbsp;·&nbsp; Max Score: {game.maxScore}</div>
+          <div style={{fontSize:11,color:C.textMuted,letterSpacing:2,textTransform:"uppercase"}}>{gDef.label} · Max Score: {gDef.maxScore}</div>
           <div style={{flex:1,height:1,background:C.border}}/>
         </div>
 
-        {view==="leaderboard"&&(
-          <div className="fi" key={activeGame+"-"+viewKey}>
+        {/* LEADERBOARD */}
+        {view==="leaderboard" && (
+          <div className="fi" key={game+"-"+vk}>
             <div style={{display:"flex",alignItems:"center",gap:14,marginBottom:16}}>
-              <h2 style={{margin:0,fontSize:20,color:C.green,fontFamily:"Playfair Display, serif",fontWeight:700}}>Leaderboard</h2>
+              <h2 style={{margin:0,fontSize:20,color:C.green,fontFamily:"Playfair Display,serif",fontWeight:700}}>Leaderboard</h2>
               <div style={{flex:1,height:1,background:C.border}}/>
-              <button className="sb" onClick={function(){setSortMode(function(m){return m==="handicap"?"alpha":"handicap";});}}
-                style={{padding:"6px 14px",borderRadius:4,border:"1px solid "+C.border,background:C.bgCard,color:C.green,fontSize:12,cursor:"pointer",fontFamily:"Lato, sans-serif",fontWeight:700}}>
-                {sortMode==="handicap"?"Sort: Handicap":"Sort: A-Z"}
+              <button className="sb" onClick={function(){setSort(function(m){return m==="handicap"?"alpha":"handicap";});}}
+                style={{padding:"6px 14px",borderRadius:4,border:"1px solid "+C.border,background:C.bgCard,color:C.green,fontSize:12,cursor:"pointer",fontFamily:"Lato,sans-serif",fontWeight:700}}>
+                {sort==="handicap"?"Sort: Handicap":"Sort: A-Z"}
               </button>
             </div>
-            <div style={{overflowX:"auto",borderRadius:6,border:"1px solid "+C.border,boxShadow:"0 2px 12px rgba(0,0,0,0.07)"}}>
+            <div style={{overflowX:"auto",borderRadius:6,border:"1px solid "+C.border,boxShadow:"0 2px 12px rgba(0,0,0,.07)"}}>
               <table style={{width:"100%",borderCollapse:"collapse",minWidth:1100,fontSize:13}}>
                 <thead>
                   <tr style={{background:C.tableHead}}>
                     <th style={Object.assign({},TH,{color:"#fff",width:36})}>#</th>
-                    <th style={Object.assign({},TH,{color:"#fff",textAlign:"left",minWidth:160,fontFamily:"Playfair Display, serif"})}>Member</th>
-                    <th style={Object.assign({},TH,{color:"rgba(255,255,255,0.8)",background:"rgba(0,0,0,0.15)",borderLeft:"1px solid rgba(255,255,255,0.1)",minWidth:56})}>Rounds</th>
-                    <th style={Object.assign({},TH,{color:"rgba(255,255,255,0.8)",background:"rgba(0,0,0,0.15)",minWidth:70})}>Avg Score</th>
-                    <th style={Object.assign({},TH,{color:"rgba(255,255,255,0.8)",background:"rgba(0,0,0,0.15)",borderRight:"1px solid rgba(255,255,255,0.1)",minWidth:70})}>Handicap</th>
-                    {[10,9,8,7,6,5,4,3,2,1].map(function(n){return<th key={n} style={Object.assign({},TH,{color:"rgba(255,255,255,0.5)",background:"rgba(0,0,0,0.25)",minWidth:38,fontSize:11,fontWeight:400})}>{"R"+n}</th>;})}
-                    <th style={Object.assign({},TH,{color:"rgba(255,255,255,0.9)",background:"rgba(44,74,46,0.6)",borderLeft:"1px solid rgba(255,255,255,0.2)",minWidth:90,fontSize:11})}>Latest Round</th>
-                    <th style={Object.assign({},TH,{color:"rgba(255,255,255,0.8)",background:"rgba(0,0,0,0.15)",borderLeft:"1px solid rgba(255,255,255,0.1)",minWidth:75})}>Avg Score</th>
-                    <th style={Object.assign({},TH,{color:"rgba(255,255,255,0.8)",background:"rgba(0,0,0,0.15)",minWidth:90})}>{pctLabel}</th>
-                    {game.showAvg50&&<th style={Object.assign({},TH,{color:"rgba(255,255,255,0.8)",background:"rgba(0,0,0,0.15)",minWidth:70})}>Avg / 50</th>}
-                    {game.showAvg50&&<th style={Object.assign({},TH,{color:"rgba(255,255,255,0.8)",background:"rgba(0,0,0,0.15)",minWidth:100})}>{pct50Label}</th>}
-                    <th style={Object.assign({},TH,{width:50})}>
-                      <PctInput value={pct} onChange={setPct}/>
-                    </th>
+                    <th style={Object.assign({},TH,{color:"#fff",textAlign:"left",minWidth:160,fontFamily:"Playfair Display,serif"})}>Member</th>
+                    <th style={Object.assign({},TH,{color:"rgba(255,255,255,.8)",background:"rgba(0,0,0,.15)",borderLeft:"1px solid rgba(255,255,255,.1)",minWidth:56})}>Rounds</th>
+                    <th style={Object.assign({},TH,{color:"rgba(255,255,255,.8)",background:"rgba(0,0,0,.15)",minWidth:70})}>Avg</th>
+                    <th style={Object.assign({},TH,{color:"rgba(255,255,255,.8)",background:"rgba(0,0,0,.15)",borderRight:"1px solid rgba(255,255,255,.1)",minWidth:70})}>Handicap</th>
+                    {[10,9,8,7,6,5,4,3,2,1].map(function(n){
+                      return <th key={n} style={Object.assign({},TH,{color:"rgba(255,255,255,.5)",background:"rgba(0,0,0,.25)",minWidth:38,fontSize:11,fontWeight:400})}>{"R"+n}</th>;
+                    })}
+                    <th style={Object.assign({},TH,{color:"rgba(255,255,255,.9)",background:"rgba(44,74,46,.6)",borderLeft:"1px solid rgba(255,255,255,.2)",minWidth:90,fontSize:11})}>Latest Round</th>
+                    <th style={Object.assign({},TH,{color:"rgba(255,255,255,.8)",background:"rgba(0,0,0,.15)",borderLeft:"1px solid rgba(255,255,255,.1)",minWidth:75})}>Avg</th>
+                    <th style={Object.assign({},TH,{color:"rgba(255,255,255,.8)",background:"rgba(0,0,0,.15)",minWidth:90})}>{pctLabel}</th>
+                    {gDef.showAvg50 && <th style={Object.assign({},TH,{color:"rgba(255,255,255,.8)",background:"rgba(0,0,0,.15)",minWidth:70})}>Avg / 50</th>}
+                    {gDef.showAvg50 && <th style={Object.assign({},TH,{color:"rgba(255,255,255,.8)",background:"rgba(0,0,0,.15)",minWidth:100})}>{pct50Label}</th>}
+                    <th style={Object.assign({},TH,{width:50})}><PctInput value={pct} onChange={setPct}/></th>
                   </tr>
                 </thead>
                 <tbody>
-                  {leaderboard.map(function(s,i){
-                    var hist=s.last10,filled=[];
-                    for(var j=0;j<10;j++)filled.push(hist[hist.length-10+j]||null);
-                    var bg=i%2===0?C.rowA:C.rowB,statBg=i%2===0?"#f4f1ea":"#eeebe1",scoreBg=i%2===0?"#faf8f4":"#f5f2ec",inlineBg=i%2===0?"#edf5ee":"#e6f0e7";
-                    return(
-                      <tr key={s.id} className="rh" style={{background:bg}} onClick={function(sid){return function(){setSelectedShooter(sid);switchView("profile");};}(s.id)}>
+                  {lb.map(function(s,i){
+                    var hist=s.last10, filled=[];
+                    for (var j=0;j<10;j++) filled.push(hist[hist.length-10+j]||null);
+                    var bg=i%2===0?C.rowA:C.rowB, sBg=i%2===0?"#f4f1ea":"#eeebe1", scBg=i%2===0?"#faf8f4":"#f5f2ec", iBg=i%2===0?"#edf5ee":"#e6f0e7";
+                    return (
+                      <tr key={s.id} className="rh" style={{background:bg}} onClick={function(id){return function(){setSel(id);sv("profile");};}(s.id)}>
                         <td style={Object.assign({},TD,{textAlign:"center",color:C.textLight,fontStyle:"italic"})}>{i+1}</td>
-                        <td style={Object.assign({},TD,{fontWeight:700,fontFamily:"Playfair Display, serif",color:C.green,fontSize:14})}>{fullName(s)}</td>
-                        <td style={Object.assign({},TD,{textAlign:"center",background:statBg,borderLeft:"1px solid "+C.border})}>{s.count}</td>
-                        <td style={Object.assign({},TD,{textAlign:"center",background:statBg})}>{s.avg||<span style={{color:C.textLight}}>—</span>}</td>
-                        <td style={Object.assign({},TD,{textAlign:"center",background:statBg,borderRight:"1px solid "+C.border})}>
-                          {s.handicap!==null?<span style={{color:handicapColor(s.handicap),fontWeight:700,fontSize:14,fontFamily:"Playfair Display, serif"}}>{s.handicap}</span>:<span style={{color:C.textLight}}>—</span>}
+                        <td style={Object.assign({},TD,{fontWeight:700,fontFamily:"Playfair Display,serif",color:C.green,fontSize:14})}>{fn(s)}</td>
+                        <td style={Object.assign({},TD,{textAlign:"center",background:sBg,borderLeft:"1px solid "+C.border})}>{s.count}</td>
+                        <td style={Object.assign({},TD,{textAlign:"center",background:sBg})}>{s.avg||<span style={{color:C.textLight}}>—</span>}</td>
+                        <td style={Object.assign({},TD,{textAlign:"center",background:sBg,borderRight:"1px solid "+C.border})}>
+                          {s.handicap!==null ? <span style={{color:hColor(s.handicap),fontWeight:700,fontSize:14,fontFamily:"Playfair Display,serif"}}>{s.handicap}</span> : <span style={{color:C.textLight}}>—</span>}
                         </td>
-                        {filled.map(function(r,j){return(
-                          <td key={j} style={Object.assign({},TD,{textAlign:"center",background:scoreBg,color:r?scoreColor(r.score,game.maxScore):"#ccc",fontWeight:r?700:400,fontSize:r?13:16})}>
-                            {r?r.score:"·"}
-                          </td>);})}
-                        <InlineInput key={s.id+"-"+activeGame} shooterId={s.id} onCommit={logInlineRound} rowBg={inlineBg} maxScore={game.maxScore}/>
-                        <td style={Object.assign({},TD,{textAlign:"center",background:statBg,borderLeft:"1px solid "+C.border})}>{s.avg||<span style={{color:C.textLight}}>—</span>}</td>
-                        <td style={Object.assign({},TD,{textAlign:"center",background:statBg})}>{s.avgPct||<span style={{color:C.textLight}}>—</span>}</td>
-                        {game.showAvg50&&<td style={Object.assign({},TD,{textAlign:"center",background:statBg})}>{s.avg50||<span style={{color:C.textLight}}>—</span>}</td>}
-                        {game.showAvg50&&<td style={Object.assign({},TD,{textAlign:"center",background:statBg})}>{s.avg50Pct||<span style={{color:C.textLight}}>—</span>}</td>}
+                        {filled.map(function(r,j){
+                          return <td key={j} style={Object.assign({},TD,{textAlign:"center",background:scBg,color:r?scoreColor(r.score,gDef.maxScore):"#ccc",fontWeight:r?700:400,fontSize:r?13:16})}>
+                            {r?r.score:"·"}</td>;
+                        })}
+                        <InlineInput key={s.id+"-"+game} shooterId={s.id} onCommit={logInline} rowBg={iBg} maxScore={gDef.maxScore} authed={authed}/>
+                        <td style={Object.assign({},TD,{textAlign:"center",background:sBg,borderLeft:"1px solid "+C.border})}>{s.avg||<span style={{color:C.textLight}}>—</span>}</td>
+                        <td style={Object.assign({},TD,{textAlign:"center",background:sBg})}>{s.avgPct||<span style={{color:C.textLight}}>—</span>}</td>
+                        {gDef.showAvg50 && <td style={Object.assign({},TD,{textAlign:"center",background:sBg})}>{s.avg50||<span style={{color:C.textLight}}>—</span>}</td>}
+                        {gDef.showAvg50 && <td style={Object.assign({},TD,{textAlign:"center",background:sBg})}>{s.avg50Pct||<span style={{color:C.textLight}}>—</span>}</td>}
                         <td style={Object.assign({},TD,{textAlign:"center"})} onClick={function(e){e.stopPropagation();}}>
-                          <button className="gb" onClick={function(sid){return function(){setSelectedShooter(sid);switchView("profile");};}(s.id)}
+                          <button className="gb" onClick={function(id){return function(){setSel(id);sv("profile");};}(s.id)}
                             style={{background:"none",border:"1px solid "+C.border,color:C.textMuted,borderRadius:3,padding:"3px 8px",cursor:"pointer",fontSize:11}}>View</button>
                         </td>
-                      </tr>);
+                      </tr>
+                    );
                   })}
                 </tbody>
               </table>
             </div>
             <div style={{marginTop:10,fontSize:11,color:C.textLight,textAlign:"right",fontStyle:"italic"}}>
               R10 = oldest · R1 = most recent &nbsp;·&nbsp;
-              <span style={{color:C.scoreGreen}}>■</span> {activeGame==="doubletrap"?"44+":"22+"} &nbsp;
-              <span style={{color:"#000000"}}>■</span> {activeGame==="doubletrap"?"30-43":"15-21"} &nbsp;
-              <span style={{color:C.red}}>■</span> {activeGame==="doubletrap"?"<30":"<15"} &nbsp;·&nbsp;
+              <span style={{color:C.scoreGreen}}>■</span> {game==="doubletrap"?"44+":"22+"} &nbsp;
+              <span style={{color:"#000"}}>■</span> {game==="doubletrap"?"30-43":"15-21"} &nbsp;
+              <span style={{color:C.red}}>■</span> {game==="doubletrap"?"<30":"<15"} &nbsp;·&nbsp;
               <span style={{color:C.green,fontStyle:"normal"}}>Green cell</span> = enter new score &amp; press Enter
             </div>
+            <div style={{marginTop:12,display:"flex",justifyContent:"flex-end"}}>
+              <button onClick={exportExcel} className="sb"
+                style={{padding:"6px 14px",borderRadius:4,border:"1px solid "+C.border,background:C.bgCard,color:C.green,fontSize:12,cursor:"pointer",fontFamily:"Lato,sans-serif",fontWeight:700}}>
+                Export to Excel
+              </button>
+            </div>
           </div>
         )}
 
-        {view==="add-shooter"&&(
-          <div className="fi" key={activeGame+"-"+viewKey} style={{maxWidth:440}}>
+        {/* SIGN IN */}
+        {view==="login" && !authed && (
+          <div className="fi" key={"login-"+vk} style={{maxWidth:380}}>
+            <SectionHeader title="Sign In"/>
+            <div style={{background:C.bgCard,border:"1px solid "+C.border,borderRadius:6,padding:"28px",boxShadow:"0 2px 12px rgba(0,0,0,.06)"}}>
+              <p style={{margin:"0 0 22px",color:C.textMuted,fontStyle:"italic",fontFamily:"Playfair Display,serif",fontSize:14}}>Enter the password to log scores and manage members.</p>
+              <label style={LST}>Password</label>
+              <div style={{position:"relative"}}>
+                <input className="if" type={showPw?"text":"password"} value={pwIn}
+                  onChange={function(e){setPwIn(e.target.value);setPwErr(false);}}
+                  onKeyDown={function(e){if(e.key==="Enter")login();}}
+                  placeholder="Enter password" style={Object.assign({},IST,{paddingRight:44})} autoFocus/>
+                <button onClick={function(){setShowPw(function(v){return !v;});}}
+                  style={{position:"absolute",right:12,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",cursor:"pointer",color:C.textMuted,fontSize:16,padding:0,lineHeight:1}}>
+                  {showPw?"○":"◉"}
+                </button>
+              </div>
+              {pwErr && <div style={{marginTop:8,color:C.red,fontSize:12}}>Incorrect password. Please try again.</div>}
+              <button className="ab" onClick={login}
+                style={{marginTop:18,width:"100%",padding:"12px",borderRadius:4,border:"none",background:C.green,color:"#fff",fontWeight:700,fontSize:14,cursor:"pointer",letterSpacing:1,fontFamily:"Lato,sans-serif",textTransform:"uppercase"}}>
+                Sign In
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ADD MEMBER */}
+        {view==="add-shooter" && authed && (
+          <div className="fi" key={game+"-"+vk} style={{maxWidth:440}}>
             <SectionHeader title="Add Member"/>
-            <div style={{background:C.bgCard,border:"1px solid "+C.border,borderRadius:6,padding:"28px",boxShadow:"0 2px 12px rgba(0,0,0,0.06)"}}>
-              <p style={{margin:"0 0 22px",color:C.textMuted,fontStyle:"italic",fontFamily:"Playfair Display, serif",fontSize:14}}>New members are added to all three games automatically.</p>
+            <div style={{background:C.bgCard,border:"1px solid "+C.border,borderRadius:6,padding:"28px",boxShadow:"0 2px 12px rgba(0,0,0,.06)"}}>
+              <p style={{margin:"0 0 22px",color:C.textMuted,fontStyle:"italic",fontFamily:"Playfair Display,serif",fontSize:14}}>New members are added to all three games automatically.</p>
               <label style={LST}>Last Name</label>
-              <input className="if" value={lastNameInput} onChange={function(e){setLastNameInput(e.target.value);}} onKeyDown={function(e){if(e.key==="Enter")addShooter();}} placeholder="e.g. Flinn" style={IST}/>
+              <input className="if" value={lnIn} onChange={function(e){setLnIn(e.target.value);}} onKeyDown={function(e){if(e.key==="Enter")addShooter();}} placeholder="e.g. Flinn" style={IST}/>
               <label style={Object.assign({},LST,{marginTop:14})}>First Name</label>
-              <input className="if" value={firstNameInput} onChange={function(e){setFirstNameInput(e.target.value);}} onKeyDown={function(e){if(e.key==="Enter")addShooter();}} placeholder="e.g. Rex" style={IST}/>
-              <button className="ab" onClick={addShooter} style={{marginTop:18,width:"100%",padding:"12px",borderRadius:4,border:"none",background:C.green,color:"#fff",fontWeight:700,fontSize:14,cursor:"pointer",letterSpacing:1,fontFamily:"Lato, sans-serif",textTransform:"uppercase"}}>Add Member</button>
+              <input className="if" value={fnIn} onChange={function(e){setFnIn(e.target.value);}} onKeyDown={function(e){if(e.key==="Enter")addShooter();}} placeholder="e.g. Rex" style={IST}/>
+              <button className="ab" onClick={addShooter} style={{marginTop:18,width:"100%",padding:"12px",borderRadius:4,border:"none",background:C.green,color:"#fff",fontWeight:700,fontSize:14,cursor:"pointer",letterSpacing:1,fontFamily:"Lato,sans-serif",textTransform:"uppercase"}}>Add Member</button>
             </div>
           </div>
         )}
 
-        {view==="log-round"&&(
-          <div className="fi" key={activeGame+"-"+viewKey} style={{maxWidth:440}}>
-            <SectionHeader title={"Log a Round — "+game.label}/>
-            <div style={{background:C.bgCard,border:"1px solid "+C.border,borderRadius:6,padding:"28px",boxShadow:"0 2px 12px rgba(0,0,0,0.06)"}}>
-              <p style={{margin:"0 0 22px",color:C.textMuted,fontStyle:"italic",fontFamily:"Playfair Display, serif",fontSize:14}}>Enter a score out of {game.maxScore} for {game.label}.</p>
+        {/* LOG ROUND */}
+        {view==="log-round" && authed && (
+          <div className="fi" key={game+"-"+vk} style={{maxWidth:440}}>
+            <SectionHeader title={"Log a Round — "+gDef.label}/>
+            <div style={{background:C.bgCard,border:"1px solid "+C.border,borderRadius:6,padding:"28px",boxShadow:"0 2px 12px rgba(0,0,0,.06)"}}>
+              <p style={{margin:"0 0 22px",color:C.textMuted,fontStyle:"italic",fontFamily:"Playfair Display,serif",fontSize:14}}>Enter a score out of {gDef.maxScore} for {gDef.label}.</p>
               <label style={LST}>Member</label>
-              <select className="if" value={roundShooterId} onChange={function(e){setRoundShooterId(e.target.value);}} style={Object.assign({},IST,{background:C.bg})}>
+              <select className="if" value={rSid} onChange={function(e){setRSid(e.target.value);}} style={Object.assign({},IST,{background:C.bg})}>
                 <option value="">— Select a member —</option>
-                {withStats.slice().sort(function(a,b){return(a.lastName||"").localeCompare(b.lastName||"");}).map(function(s){return<option key={s.id} value={s.id}>{fullName(s)}</option>;})}
+                {ws.slice().sort(function(a,b){return(a.lastName||"").localeCompare(b.lastName||"");}).map(function(s){return <option key={s.id} value={s.id}>{fn(s)}</option>;})}
               </select>
-              <label style={Object.assign({},LST,{marginTop:14})}>Score (out of {game.maxScore})</label>
-              <input className="if" type="number" min={0} max={game.maxScore} value={roundScore} onChange={function(e){setRoundScore(e.target.value);}} placeholder={"e.g. "+Math.round(game.maxScore*0.85)} style={IST}/>
-              <button className="ab" onClick={logRound} style={{marginTop:18,width:"100%",padding:"12px",borderRadius:4,border:"none",background:C.green,color:"#fff",fontWeight:700,fontSize:14,cursor:"pointer",letterSpacing:1,fontFamily:"Lato, sans-serif",textTransform:"uppercase"}}>Log Round</button>
+              <label style={Object.assign({},LST,{marginTop:14})}>Score (out of {gDef.maxScore})</label>
+              <input className="if" type="number" min={0} max={gDef.maxScore} value={rSc} onChange={function(e){setRSc(e.target.value);}} placeholder={"e.g. "+Math.round(gDef.maxScore*.85)} style={IST}/>
+              <button className="ab" onClick={logRound} style={{marginTop:18,width:"100%",padding:"12px",borderRadius:4,border:"none",background:C.green,color:"#fff",fontWeight:700,fontSize:14,cursor:"pointer",letterSpacing:1,fontFamily:"Lato,sans-serif",textTransform:"uppercase"}}>Log Round</button>
             </div>
           </div>
         )}
 
-        {view==="profile"&&profileShooter&&(
-          <div className="fi" key={activeGame+"-"+viewKey}>
-            <button className="gb" onClick={function(){switchView("leaderboard");}} style={{background:"none",border:"none",color:C.green,cursor:"pointer",fontSize:13,marginBottom:20,padding:0,fontFamily:"Lato, sans-serif"}}>&larr; Back to Leaderboard</button>
-            <div style={{background:C.bgCard,border:"1px solid "+C.border,borderLeft:"4px solid "+C.green,borderRadius:6,padding:"24px 28px",marginBottom:28,boxShadow:"0 2px 12px rgba(0,0,0,0.06)"}}>
-              <div style={{fontSize:10,color:C.textMuted,letterSpacing:2.5,textTransform:"uppercase",marginBottom:4}}>Member Profile &nbsp;·&nbsp; {game.label}</div>
-              <h2 style={{margin:"0 0 22px",fontSize:26,color:C.green,fontFamily:"Playfair Display, serif",fontWeight:700}}>{fullName(profileShooter)}</h2>
+        {/* PROFILE */}
+        {view==="profile" && profSh && (
+          <div className="fi" key={game+"-"+vk}>
+            <button className="gb" onClick={function(){sv("leaderboard");}} style={{background:"none",border:"none",color:C.green,cursor:"pointer",fontSize:13,marginBottom:20,padding:0,fontFamily:"Lato,sans-serif"}}>&larr; Back to Leaderboard</button>
+            <div style={{background:C.bgCard,border:"1px solid "+C.border,borderLeft:"4px solid "+C.green,borderRadius:6,padding:"24px 28px",marginBottom:28,boxShadow:"0 2px 12px rgba(0,0,0,.06)"}}>
+              <div style={{fontSize:10,color:C.textMuted,letterSpacing:2.5,textTransform:"uppercase",marginBottom:4}}>Member Profile · {gDef.label}</div>
+              <h2 style={{margin:"0 0 22px",fontSize:26,color:C.green,fontFamily:"Playfair Display,serif",fontWeight:700}}>{fn(profSh)}</h2>
               <div style={{display:"flex",gap:48,flexWrap:"wrap",borderTop:"1px solid "+C.border,paddingTop:18}}>
-                <Stat label="Rounds Played" value={profileStats.count}/>
-                <Stat label="Average Score" value={profileStats.avg||"—"}/>
-                <Stat label="Handicap" value={profileStats.handicap||"—"} highlight/>
+                <Stat label="Rounds Played" value={profStats.count}/>
+                <Stat label="Average Score" value={profStats.avg||"—"}/>
+                <Stat label="Handicap" value={profStats.handicap||"—"} highlight/>
               </div>
             </div>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
               <SectionHeader title="Round History" small/>
-              <button className="db" onClick={function(){deleteShooter(profileShooter.id);}} style={{background:"none",border:"1px solid "+C.red,color:C.red,borderRadius:4,padding:"6px 14px",cursor:"pointer",fontSize:12,fontFamily:"Lato, sans-serif"}}>Remove Member</button>
+              {authed && <button className="db" onClick={function(){delShooter(profSh.id);}} style={{background:"none",border:"1px solid "+C.red,color:C.red,borderRadius:4,padding:"6px 14px",cursor:"pointer",fontSize:12,fontFamily:"Lato,sans-serif"}}>Remove Member</button>}
             </div>
-            {profileRounds.length===0?(
-              <p style={{color:C.textMuted,fontStyle:"italic"}}>No rounds logged yet for {game.label}.</p>
-            ):(
+            {profRounds.length===0 ? (
+              <p style={{color:C.textMuted,fontStyle:"italic"}}>No rounds logged yet for {gDef.label}.</p>
+            ) : (
               <div style={{borderRadius:6,border:"1px solid "+C.border,overflow:"hidden"}}>
                 <table style={{width:"100%",borderCollapse:"collapse"}}>
                   <thead>
                     <tr style={{background:C.tableHead}}>
-                      <th style={Object.assign({},TH,{textAlign:"left",color:"#fff",fontFamily:"Playfair Display, serif"})}>Date</th>
-                      <th style={Object.assign({},TH,{color:"#fff",fontFamily:"Playfair Display, serif"})}>Score</th>
-                      <th style={Object.assign({},TH,{color:"#fff",fontFamily:"Playfair Display, serif"})}>Round Handicap</th>
-                      <th style={Object.assign({},TH,{width:40})}></th>
+                      <th style={Object.assign({},TH,{textAlign:"left",color:"#fff",fontFamily:"Playfair Display,serif"})}>Date</th>
+                      <th style={Object.assign({},TH,{color:"#fff",fontFamily:"Playfair Display,serif"})}>Score</th>
+                      <th style={Object.assign({},TH,{color:"#fff",fontFamily:"Playfair Display,serif"})}>Round Handicap</th>
+                      {authed && <th style={Object.assign({},TH,{width:40})}></th>}
                     </tr>
                   </thead>
                   <tbody>
-                    {profileRounds.map(function(r,i){return(
-                      <tr key={r.id} className="rh" style={{background:i%2===0?C.rowA:C.rowB}}>
-                        <td style={Object.assign({},TD,{color:C.textMuted,fontStyle:"italic"})}>{r.date}</td>
-                        <td style={Object.assign({},TD,{textAlign:"center",color:scoreColor(r.score,game.maxScore),fontWeight:700,fontFamily:"Playfair Display, serif",fontSize:15})}>{r.score} / {game.maxScore}</td>
-                        <td style={Object.assign({},TD,{textAlign:"center"})}>{game.maxScore-r.score}</td>
-                        <td style={Object.assign({},TD,{textAlign:"center"})}>
-                          <button className="db" onClick={function(rid){return function(){deleteRound(rid);};}(r.id)} style={{background:"none",border:"none",color:"#bbb",cursor:"pointer",fontSize:14}}>&#x2715;</button>
-                        </td>
-                      </tr>);})}
+                    {profRounds.map(function(r,i){
+                      return (
+                        <tr key={r.id} className="rh" style={{background:i%2===0?C.rowA:C.rowB}}>
+                          <td style={Object.assign({},TD,{color:C.textMuted,fontStyle:"italic"})}>{r.date}</td>
+                          <td style={Object.assign({},TD,{textAlign:"center",color:scoreColor(r.score,gDef.maxScore),fontWeight:700,fontFamily:"Playfair Display,serif",fontSize:15})}>{r.score} / {gDef.maxScore}</td>
+                          <td style={Object.assign({},TD,{textAlign:"center"})}>{gDef.maxScore-r.score}</td>
+                          {authed && <td style={Object.assign({},TD,{textAlign:"center"})}>
+                            <button className="db" onClick={function(id){return function(){delRound(id);};}(r.id)} style={{background:"none",border:"none",color:"#bbb",cursor:"pointer",fontSize:14}}>&#x2715;</button>
+                          </td>}
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -552,13 +675,19 @@ function App(){
           </div>
         )}
       </div>
-      <div style={{background:C.green,marginTop:60,padding:"24px",textAlign:"center"}}>
-        <div style={{color:"rgba(255,255,255,0.6)",fontSize:11,letterSpacing:2,textTransform:"uppercase",fontWeight:300}}>Gulph Mills Golf Club &nbsp;·&nbsp; Shooting Sports &nbsp;·&nbsp; King of Prussia, PA</div>
-        <div style={{color:"rgba(255,255,255,0.35)",fontSize:10,marginTop:6}}>200 Swedeland Road &nbsp;·&nbsp; (610) 828-0717</div>
+
+      {/* Footer */}
+      <div style={{background:C.green,marginTop:60,padding:"24px"}}>
+        <div style={{maxWidth:1100,margin:"0 auto",textAlign:"center"}}>
+          <div style={{color:"rgba(255,255,255,.6)",fontSize:11,letterSpacing:2,textTransform:"uppercase",fontWeight:300}}>Gulph Mills Golf Club · Shooting Sports · King of Prussia, PA</div>
+          <div style={{color:"rgba(255,255,255,.35)",fontSize:10,marginTop:6}}>200 Swedeland Road · (610) 828-0717</div>
+        </div>
       </div>
+
     </div>
   );
 }
+
 ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
 </script>
 </body>
